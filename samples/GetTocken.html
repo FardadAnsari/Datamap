@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>API Authorization</title>
+</head>
+<body>
+    <h1>Token Authorization Example</h1>
+
+    <!-- Form for inputting username and password -->
+    <form id="authForm">
+        <label for="username">Username:</label>
+        <input type="text" id="username" name="username" required>
+        <br><br>
+        <label for="password">Password:</label>
+        <input type="password" id="password" name="password" required>
+        <br><br>
+        <button type="submit">Get Token and Fetch Data</button>
+    </form>
+
+    <div id="response"></div> <!-- To display the response -->
+
+    <script>
+        // Function to get a token
+        async function getToken(username, password) {
+            const url = 'http://127.0.0.1:8000/api/token/'; // Replace with your token URL
+
+            const response = await fetch(url, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ username, password }), // Sending username and password
+            });
+
+            if (!response.ok) {
+                throw new Error('Failed to get token');
+            }
+
+            const data = await response.json();
+            console.log(data.access)
+            return data.access; // Assuming the token is returned in the response
+        }
+
+        // Function to use the token to authorize an API call
+        async function fetchData(token) {
+            const apiUrl = 'http://127.0.0.1:8000/api/whatthefork';
+
+            const response = await fetch(apiUrl, {
+                method: 'GET',
+                headers: {
+                    'Authorization': `Bearer ${token}`, // Using Bearer token for authorization
+                },
+            });
+
+            if (!response.ok) {
+                throw new Error('Failed to fetch data');
+            }
+
+            const data = await response.json();
+            return data; // Return the fetched data
+        }
+
+        // Function to check for an existing token and fetch data
+        async function fetchDataWithStoredToken() {
+            const token = localStorage.getItem('apiToken'); // Retrieve token from LocalStorage
+
+            if (!token) {
+                document.getElementById('response').innerText = 'No token found. Please log in.';
+                return;
+            }
+
+            try {
+                const data = await fetchData(token); // Fetch data using the stored token
+                console.log('Data:', data);
+                document.getElementById('response').innerHTML = `<pre>${JSON.stringify(data, null, 2)}</pre>`;
+            } catch (error) {
+                console.error('Error:', error);
+                document.getElementById('response').innerText = `Error: ${error.message}`;
+            }
+        }
+
+        // Handling form submission
+        document.getElementById('authForm').addEventListener('submit', async function (event) {
+            event.preventDefault(); // Prevent the form from reloading the page
+
+            const username = document.getElementById('username').value;
+            const password = document.getElementById('password').value;
+
+            try {
+                // Get the token
+                const token = await getToken(username, password);
+                console.log('Token:', token);
+
+                // Save the token to LocalStorage
+                localStorage.setItem('apiToken', token);
+
+                // Fetch data using the token
+                const data = await fetchData(token);
+                console.log('Data:', data);
+
+                // Display the fetched data in the response div
+                document.getElementById('response').innerHTML = `<pre>${JSON.stringify(data, null, 2)}</pre>`;
+            } catch (error) {
+                console.error('Error:', error);
+                document.getElementById('response').innerText = `Error: ${error.message}`;
+            }
+        });
+
+        // Optionally, call this function on page load to check for an existing token
+        fetchDataWithStoredToken();
+    </script>
+</body>
+</html>

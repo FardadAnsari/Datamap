@@ -1,0 +1,41 @@
+.popup-container {
+    font-family: Arial, sans-serif;
+}
+
+.popup-container h3 {
+    font-size: 1.5em;
+    font-weight: bold;
+    color: #333;
+}
+
+.popup-container hr {
+    margin: 10px 0;
+}
+
+.popup-container ul {
+    list-style: none;
+    padding: 0;
+}
+
+.popup-container ul li {
+    display: grid;
+    grid-template-columns: 20px 40% 1fr;
+    padding: 8px;
+    align-items: center;
+    transition: all 0.2s;
+    border-radius: 10px;
+}
+
+.popup-container ul li i {
+    margin-right: 8px;
+}
+
+.popup-container ul li span:first-child {
+    font-weight: bold;
+}
+
+.popup-container ul li:not(:where([style*="opacity: 0.5"])):hover {
+    background-color: rgba(255, 255, 255, 0.6);
+    color: rgb(0, 0, 0);
+    transform: scale(1.05);
+}

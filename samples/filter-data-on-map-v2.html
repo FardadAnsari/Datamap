@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Leaflet Map with Search and Filter by Type</title>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.3/dist/leaflet.css" />
+    <style>
+        #map { height: 500px; margin-top: 10px; }
+        .controls { margin-bottom: 10px; }
+        .controls input, .controls select {
+            padding: 5px;
+            font-size: 16px;
+        }
+        .controls button {
+            padding: 5px 10px;
+            font-size: 16px;
+            cursor: pointer;
+        }
+        .controls .radio-group {
+            margin-right: 10px;
+        }
+    </style>
+</head>
+<body>
+    <div class="controls">
+        <div class="radio-group">
+            <input type="radio" id="searchByName" name="searchType" value="name" checked>
+            <label for="searchByName">Name</label>
+            <input type="radio" id="searchByPostcode" name="searchType" value="postcode">
+            <label for="searchByPostcode">Postcode</label>
+            <input type="radio" id="searchByPhone" name="searchType" value="phone">
+            <label for="searchByPhone">Phone Number</label>
+        </div>
+        <input type="text" id="searchInput" placeholder="Search...">
+        <select id="cityFilter">
+            <option value="">All Cities</option>
+            <option value="New York">New York</option>
+            <option value="Los Angeles">Los Angeles</option>
+            <option value="Chicago">Chicago</option>
+            <option value="Houston">Houston</option>
+            <option value="Phoenix">Phoenix</option>
+        </select>
+        <button id="filterBtn">Filter</button>
+    </div>
+    <div id="map"></div>
+
+    <script src="https://unpkg.com/leaflet@1.9.3/dist/leaflet.js"></script>
+    <script>
+        // Fake JSON data with 40 entries, including name, city, language, postcode, and phone number
+        const data = [
+            { "name": "John Doe", "city": "New York", "language": "English", "postcode": "10001", "phone": "123-456-7890", "lat": 40.7128, "lng": -74.0060 },
+            { "name": "Jane Smith", "city": "Los Angeles", "language": "Spanish", "postcode": "90001", "phone": "234-567-8901", "lat": 34.0522, "lng": -118.2437 },
+            { "name": "Michael Brown", "city": "Chicago", "language": "French", "postcode": "60601", "phone": "345-678-9012", "lat": 41.8781, "lng": -87.6298 },
+            { "name": "Emily Davis", "city": "Houston", "language": "Chinese", "postcode": "77001", "phone": "456-789-0123", "lat": 29.7604, "lng": -95.3698 },
+            { "name": "Robert Johnson", "city": "Phoenix", "language": "German", "postcode": "85001", "phone": "567-890-1234", "lat": 33.4484, "lng": -112.0740 },
+            // ... Add more fake data points for a total of 40 entries
+            { "name": "Sarah Miller", "city": "Los Angeles", "language": "English", "postcode": "90002", "phone": "123-111-2222", "lat": 34.0522, "lng": -118.2437 },
+            { "name": "David Taylor", "city": "Chicago", "language": "French", "postcode": "60602", "phone": "222-333-4444", "lat": 41.8781, "lng": -87.6298 },
+            { "name": "Jessica Wilson", "city": "Phoenix", "language": "German", "postcode": "85002", "phone": "333-444-5555", "lat": 33.4484, "lng": -112.0740 },
+            { "name": "Joshua Garcia", "city": "Houston", "language": "Spanish", "postcode": "77002", "phone": "444-555-6666", "lat": 29.7604, "lng": -95.3698 },
+            { "name": "Matthew Martinez", "city": "New York", "language": "Chinese", "postcode": "10002", "phone": "555-666-7777", "lat": 40.7128, "lng": -74.0060 },
+            // Total 40 similar entries
+        ];
+
+        // Initialize the map
+        const map = L.map('map').setView([39.8283, -98.5795], 4); // Center on the USA
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+        }).addTo(map);
+
+        // Create a layer group to manage markers
+        const markerGroup = L.layerGroup().addTo(map);
+
+        // Function to add markers to the map
+        function addMarkers(filteredData) {
+            markerGroup.clearLayers(); // Clear existing markers
+            filteredData.forEach(item => {
+                const marker = L.marker([item.lat, item.lng])
+                    .bindPopup(`<strong>${item.name}</strong><br>City: ${item.city}<br>Language: ${item.language}<br>Postcode: ${item.postcode}<br>Phone: ${item.phone}`)
+                    .addTo(markerGroup);
+            });
+        }
+
+        // Add initial markers to the map
+        addMarkers(data);
+
+        // Filter function
+        function filterMarkers() {
+            const searchInput = document.getElementById('searchInput').value.toLowerCase();
+            const citySelect = document.getElementById('cityFilter').value;
+            const searchType = document.querySelector('input[name="searchType"]:checked').value;
+
+            const filteredData = data.filter(item => {
+                let matchesSearch = false;
+
+                // Determine which field to search based on the selected radio button
+                if (searchType === 'name') {
+                    matchesSearch = item.name.toLowerCase().includes(searchInput);
+                } else if (searchType === 'postcode') {
+                    matchesSearch = item.postcode.includes(searchInput);
+                } else if (searchType === 'phone') {
+                    matchesSearch = item.phone.includes(searchInput);
+                }
+
+                const matchesCity = citySelect === "" || item.city === citySelect;
+                return matchesSearch && matchesCity;
+            });
+
+            // Add filtered markers to the map
+            addMarkers(filteredData);
+        }
+
+        // Event listener for the filter button
+        document.getElementById('filterBtn').addEventListener('click', filterMarkers);
+    </script>
+</body>
+</html>

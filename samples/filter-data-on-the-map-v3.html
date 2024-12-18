@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Leaflet Map - UK Restaurants Filter</title>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.3/dist/leaflet.css" />
+    <style>
+        #map { height: 500px; margin-top: 10px; }
+        .controls { margin-bottom: 10px; }
+        .controls input, .controls select {
+            padding: 5px;
+            font-size: 16px;
+        }
+        .controls button {
+            padding: 5px 10px;
+            font-size: 16px;
+            cursor: pointer;
+        }
+        .controls .radio-group {
+            margin-right: 10px;
+        }
+    </style>
+</head>
+<body>
+    <div class="controls">
+        <div class="radio-group">
+            <input type="radio" id="searchByName" name="searchType" value="name" checked>
+            <label for="searchByName">Name</label>
+
+            <input type="radio" id="searchByPostcode" name="searchType" value="postcode">
+            <label for="searchByPostcode">Postcode</label>
+
+            <input type="radio" id="searchByPhone" name="searchType" value="phone">
+            <label for="searchByPhone">Phone Number</label>
+        </div>
+        <input type="text" id="searchInput" placeholder="Search...">
+        <select id="cityFilter">
+            <option value="">All Cities</option>
+            <option value="London">London</option>
+            <option value="Manchester">Manchester</option>
+            <option value="Birmingham">Birmingham</option>
+            <option value="Leeds">Leeds</option>
+            <option value="Liverpool">Liverpool</option>
+        </select>
+        <select id="categoryFilter">
+            <option value="">All Categories</option>
+            <option value="Italian">Italian</option>
+            <option value="Chinese">Chinese</option>
+            <option value="Indian">Indian</option>
+            <option value="Thai">Thai</option>
+            <option value="American">American</option>
+        </select>
+        <button id="filterBtn">Filter</button>
+    </div>
+    <div id="map"></div>
+
+    <script src="https://unpkg.com/leaflet@1.9.3/dist/leaflet.js"></script>
+    <script>
+        // Initialize the map
+        const map = L.map('map').setView([53.0, -2.0], 6); // Centered over the UK
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+        }).addTo(map);
+
+        // Create a layer group to manage markers
+        const markerGroup = L.layerGroup().addTo(map);
+
+        // Function to add markers to the map
+        function addMarkers(filteredData) {
+            markerGroup.clearLayers(); // Clear existing markers
+            filteredData.forEach(item => {
+                const marker = L.marker([item.lat, item.lng])
+                    .bindPopup(`<strong>${item.name}</strong><br>City: ${item.city}<br>Category: ${item.category}<br>Postcode: ${item.postcode}<br>Phone: ${item.phone}`)
+                    .addTo(markerGroup);
+            });
+        }
+
+        // Function to fetch data from API
+        async function fetchData() {
+            try {
+                const response = await fetch('https://api.example.com/restaurants'); // Replace with your API URL
+                const data = await response.json();
+
+                // Process data from API
+                // Assuming data is an array of restaurant objects
+                // For nested JSON, adjust this extraction as needed
+                return data.restaurants.map(item => ({
+                    name: item.name,
+                    city: item.address.city,
+                    category: item.category,
+                    postcode: item.address.postcode,
+                    phone: item.phone,
+                    lat: item.location.lat,
+                    lng: item.location.lng
+                }));
+            } catch (error) {
+                console.error('Error fetching data:', error);
+                return [];
+            }
+        }
+
+        // Filter function
+        async function filterMarkers() {
+            const searchInput = document.getElementById('searchInput').value.toLowerCase();
+            const citySelect = document.getElementById('cityFilter').value;
+            const categorySelect = document.getElementById('categoryFilter').value;
+            const searchType = document.querySelector('input[name="searchType"]:checked').value;
+
+            const data = await fetchData(); // Fetch data from API
+
+            const filteredData = data.filter(item => {
+                let matchesSearch = false;
+
+                // Determine which field to search based on the selected radio button
+                if (searchType === 'name') {
+                    matchesSearch = item.name.toLowerCase().includes(searchInput);
+                } else if (searchType === 'postcode') {
+                    matchesSearch = item.postcode.includes(searchInput);
+                } else if (searchType === 'phone') {
+                    matchesSearch = item.phone.includes(searchInput);
+                }
+
+                const matchesCity = citySelect === "" || item.city === citySelect;
+                const matchesCategory = categorySelect === "" || item.category === categorySelect;
+
+                return matchesSearch && matchesCity && matchesCategory;
+            });
+
+            // Add filtered markers to the map
+            addMarkers(filteredData);
+        }
+
+        // Event listener for the filter button
+        document.getElementById('filterBtn').addEventListener('click', filterMarkers);
+    </script>
+</body>
+</html>

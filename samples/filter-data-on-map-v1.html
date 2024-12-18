@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Leaflet Map with Search and Filter</title>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.3/dist/leaflet.css" />
+    <style>
+        #map { height: 500px; margin-top: 10px; }
+        .controls { margin-bottom: 10px; }
+        .controls input, .controls select {
+            padding: 5px;
+            font-size: 16px;
+        }
+        .controls button {
+            padding: 5px 10px;
+            font-size: 16px;
+            cursor: pointer;
+        }
+    </style>
+</head>
+<body>
+    <div class="controls">
+        <input type="text" id="nameSearch" placeholder="Search by name...">
+        <select id="cityFilter">
+            <option value="">All Cities</option>
+            <option value="New York">New York</option>
+            <option value="Los Angeles">Los Angeles</option>
+            <option value="Chicago">Chicago</option>
+            <option value="Houston">Houston</option>
+            <option value="Phoenix">Phoenix</option>
+        </select>
+        <button id="filterBtn">Filter</button>
+    </div>
+    <div id="map"></div>
+
+    <script src="https://unpkg.com/leaflet@1.9.3/dist/leaflet.js"></script>
+    <script>
+        // Fake JSON data
+        const data = [
+            { "name": "John Doe", "city": "New York", "language": "English", "lat": 40.7128, "lng": -74.0060 },
+            { "name": "Jane Smith", "city": "Los Angeles", "language": "Spanish", "lat": 34.0522, "lng": -118.2437 },
+            { "name": "Michael Brown", "city": "Chicago", "language": "French", "lat": 41.8781, "lng": -87.6298 },
+            { "name": "Emily Davis", "city": "Houston", "language": "Chinese", "lat": 29.7604, "lng": -95.3698 },
+            { "name": "Robert Johnson", "city": "Phoenix", "language": "German", "lat": 33.4484, "lng": -112.0740 }
+        ];
+
+        // Initialize the map
+        const map = L.map('map').setView([39.8283, -98.5795], 4); // Center on the USA
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+        }).addTo(map);
+
+        // Create a layer group to manage markers
+        const markerGroup = L.layerGroup().addTo(map);
+
+        // Function to add markers to the map
+        function addMarkers(filteredData) {
+            markerGroup.clearLayers(); // Clear existing markers
+            filteredData.forEach(item => {
+                const marker = L.marker([item.lat, item.lng])
+                    .bindPopup(`<strong>${item.name}</strong><br>City: ${item.city}<br>Language: ${item.language}`)
+                    .addTo(markerGroup);
+            });
+        }
+
+        // Add initial markers to the map
+        addMarkers(data);
+
+        // Filter function
+        function filterMarkers() {
+            const nameInput = document.getElementById('nameSearch').value.toLowerCase();
+            const citySelect = document.getElementById('cityFilter').value;
+
+            const filteredData = data.filter(item => {
+                const matchesName = item.name.toLowerCase().includes(nameInput);
+                const matchesCity = citySelect === "" || item.city === citySelect;
+                return matchesName && matchesCity;
+            });
+
+            // Add filtered markers to the map
+            addMarkers(filteredData);
+        }
+
+        // Event listener for the filter button
+        document.getElementById('filterBtn').addEventListener('click', filterMarkers);
+    </script>
+</body>
+</html>

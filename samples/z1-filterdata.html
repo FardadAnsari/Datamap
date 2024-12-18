@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Map Filter with API</title>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
+    <style>
+        #map {
+            height: 500px;
+            width: 100%;
+        }
+        .controls {
+            position: absolute;
+            top: 10px;
+            left: 10px;
+            background-color: white;
+            padding: 10px;
+            z-index: 1000;
+            border-radius: 5px;
+            box-shadow: 0 0 10px rgba(0,0,0,0.5);
+        }
+    </style>
+</head>
+<body>
+
+<div id="map"></div>
+
+<div class="controls">
+    <h3>Filter Data</h3>
+    <!-- Radio buttons for selecting search type -->
+    <label><input type="radio" name="searchType" value="name" checked> Name</label>
+    <label><input type="radio" name="searchType" value="phone"> Phone Number</label>
+    <label><input type="radio" name="searchType" value="postcode"> Postcode</label>
+
+    <br><br>
+
+    <!-- Search input field -->
+    <input type="text" id="searchInput" placeholder="Enter search term...">
+
+    <br><br>
+
+    <!-- Dropdown for city -->
+    <label for="cityDropdown">Select City:</label>
+    <select id="cityDropdown">
+        <option value="">All Cities</option>
+        <!-- You can add more cities or dynamically load them from the API -->
+        <option value="London">London</option>
+        <option value="Manchester">Manchester</option>
+        <option value="Birmingham">Birmingham</option>
+    </select>
+
+    <br><br>
+
+    <!-- Button to apply filter -->
+    <button onclick="applyFilter()">Filter</button>
+</div>
+
+<script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+<script>
+    var map = L.map('map').setView([51.505, -0.09], 13); // Default center to London
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        maxZoom: 19
+    }).addTo(map);
+
+    let data = []; // Data will be populated from API
+
+    // Fetch data from API (replace 'your-api-url' with your actual API URL)
+    function fetchData() {
+        fetch('your-api-url')
+            .then(response => response.json())
+            .then(apiData => {
+                data = apiData; // Assuming the API response is a list of objects
+                addMarkers(data); // Show all markers on the map
+            })
+            .catch(error => {
+                console.error('Error fetching data:', error);
+            });
+    }
+
+    // Call fetchData on page load to populate the map with initial data
+    fetchData();
+
+    // Function to add markers to the map
+    function addMarkers(data) {
+        data.forEach(function (item) {
+            L.marker([item.latitude, item.longitude])
+                .bindPopup('<b>' + item.name + '</b><br>Phone: ' + item.phone + '<br>Postcode: ' + item.postcode + '<br>City: ' + item.city)
+                .addTo(map);
+        });
+    }
+
+    // Filter the markers based on search criteria
+    function applyFilter() {
+        // Clear all current markers
+        map.eachLayer(function (layer) {
+            if (layer instanceof L.Marker) {
+                map.removeLayer(layer);
+            }
+        });
+
+        // Get search type and value
+        var searchType = document.querySelector('input[name="searchType"]:checked').value;
+        var searchValue = document.getElementById('searchInput').value.toLowerCase();
+        var selectedCity = document.getElementsByClassName('from-select form-select-lg mb-3').value.toLowerCase();
+
+        // Filter the data
+        var filteredData = data.filter(function (item) {
+            var match = true;
+
+            if (searchValue) {
+                match = item[searchType].toLowerCase().includes(searchValue);
+            }
+
+            if (selectedCity && selectedCity !== item.city.toLowerCase()) {
+                match = false;
+            }
+
+            return match;
+        });
+
+        // Add filtered markers to the map
+        addMarkers(filteredData);
+    }
+
+    document.getElementsByClassName('btn btn-primary').addEventListener('click', applyFilter);
+</script>
+
+</body>
+</html>

@@ -1,0 +1,206 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chart.js Circular Chart with User Input</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        body {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            margin-top: 50px;
+        }
+        select {
+            margin: 10px;
+        }
+        .chart-container {
+            width: 300px; /* Set the desired width */
+            height: 300px; /* Set the desired height */
+            position: relative;
+            margin: 20px 0; /* Add some margin */
+        }
+        canvas {
+            max-width: 100%; /* Ensure the canvas fits the container */
+            max-height: 100%;
+        }
+    </style>
+</head>
+<body>
+    <h1>CALL CLICKS and WEBSITE CLICKS Percentage Chart</h1>
+
+    <!-- File input for JSON upload -->
+    <input type="file" id="fileInput" accept=".json" />
+
+    <!-- Dropdowns for Year, Month, and Day Selection -->
+    <label for="year">Select Year:</label>
+    <select id="year"></select>
+
+    <label for="month">Select Month:</label>
+    <select id="month"></select>
+
+    <label for="day">Select Day:</label>
+    <select id="day"></select>
+
+    <button id="showChart">Show Chart</button>
+
+    <!-- Chart Container -->
+    <div class="chart-container">
+        <canvas id="myChart"></canvas>
+    </div>
+
+    <script>
+        let jsonData = null; // To store the uploaded JSON data
+
+        // Function to handle file upload
+        const handleFileUpload = (event) => {
+            const file = event.target.files[0];
+            const reader = new FileReader();
+
+            reader.onload = (e) => {
+                try {
+                    jsonData = JSON.parse(e.target.result);
+                    console.log('Uploaded JSON Data:', jsonData); // Log the JSON data to the console
+                    populateDropdowns(); // Populate dropdowns after loading the file
+                } catch (error) {
+                    console.error('Error parsing JSON:', error);
+                    alert('Invalid JSON file. Please ensure the file is correctly formatted.');
+                }
+            };
+
+            if (file) {
+                reader.readAsText(file);
+            }
+        };
+
+        // Populate year, month, and day dropdowns
+        const populateDropdowns = () => {
+            if (!jsonData || !jsonData.CALL_CLICKS || !jsonData.WEBSITE_CLICKS) return; // Ensure required data exists
+
+            const yearSelect = document.getElementById('year');
+            const monthSelect = document.getElementById('month');
+            const daySelect = document.getElementById('day');
+
+            // Clear existing options
+            yearSelect.innerHTML = '';
+            monthSelect.innerHTML = '';
+            daySelect.innerHTML = '';
+
+            // Populate year dropdown
+            const years = new Set();
+            jsonData.CALL_CLICKS.timeSeries.datedValues.forEach(item => {
+                years.add(item.date.year);
+            });
+            years.forEach(year => {
+                yearSelect.add(new Option(year, year));
+            });
+
+            // Populate month dropdown
+            for (let month = 1; month <= 12; month++) {
+                monthSelect.add(new Option(month, month));
+            }
+
+            // Populate day dropdown
+            for (let day = 1; day <= 31; day++) {
+                daySelect.add(new Option(day, day));
+            }
+        };
+
+        // Function to show the chart based on selected date
+        const showChart = () => {
+            const selectedYear = parseInt(document.getElementById('year').value);
+            const selectedMonth = parseInt(document.getElementById('month').value);
+            const selectedDay = parseInt(document.getElementById('day').value);
+
+            let callClicks = 0;
+            let websiteClicks = 0;
+
+            // Aggregate clicks for the selected date
+            const callData = jsonData.CALL_CLICKS.timeSeries.datedValues.find(item =>
+                item.date.year === selectedYear && item.date.month === selectedMonth && item.date.day === selectedDay
+            );
+
+            const websiteData = jsonData.WEBSITE_CLICKS.timeSeries.datedValues.find(item =>
+                item.date.year === selectedYear && item.date.month === selectedMonth && item.date.day === selectedDay
+            );
+
+            // Logging the selected date
+            console.log(`Selected Date: ${selectedYear}-${selectedMonth}-${selectedDay}`);
+
+            // Check if data exists for the selected date
+            if (callData) {
+                callClicks = parseInt(callData.value, 10);
+                console.log(`CALL CLICKS Found: ${callClicks} for date ${selectedYear}-${selectedMonth}-${selectedDay}`);
+            } else {
+                console.warn(`CALL CLICKS data missing for: ${selectedYear}-${selectedMonth}-${selectedDay}`);
+            }
+
+            if (websiteData) {
+                websiteClicks = parseInt(websiteData.value, 10);
+                console.log(`WEBSITE CLICKS Found: ${websiteClicks} for date ${selectedYear}-${selectedMonth}-${selectedDay}`);
+            } else {
+                console.warn(`WEBSITE CLICKS data missing for: ${selectedYear}-${selectedMonth}-${selectedDay}`);
+            }
+
+            // Log click counts for verification
+            console.log(`CALL CLICKS: ${callClicks}, WEBSITE CLICKS: ${websiteClicks}`);
+
+            const totalClicks = callClicks + websiteClicks;
+
+            // Check for total clicks
+            if (totalClicks === 0) {
+                alert(`No clicks recorded for ${selectedYear}-${selectedMonth}-${selectedDay}.`);
+                return; // Exit if there are no clicks
+            }
+
+            // Calculate percentages
+            const callPercentage = (callClicks / totalClicks) * 100;
+            const websitePercentage = (websiteClicks / totalClicks) * 100;
+
+            // Create the circular chart
+            const ctx = document.getElementById('myChart').getContext('2d');
+
+            // Clear previous chart if it exists
+            if (window.myChart instanceof Chart) {
+                window.myChart.destroy(); // Check if it's an instance of Chart
+            }
+
+            // Create a new chart
+            try {
+                window.myChart = new Chart(ctx, {
+                    type: 'pie', // Pie chart
+                    data: {
+                        labels: ['CALL CLICKS', 'WEBSITE CLICKS'],
+                        datasets: [{
+                            label: 'Click Percentage',
+                            data: [callPercentage, websitePercentage],
+                            backgroundColor: ['rgba(75, 192, 192, 0.6)', 'rgba(153, 102, 255, 0.6)'],
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        plugins: {
+                            legend: {
+                                position: 'top',
+                            },
+                            title: {
+                                display: true,
+                                text: `Click Percentages for ${selectedYear}-${selectedMonth}-${selectedDay}`
+                            }
+                        }
+                    }
+                });
+                console.log('Chart created successfully.');
+            } catch (error) {
+                console.error('Error creating chart:', error);
+                alert('An error occurred while creating the chart. Please check the console for details.');
+            }
+        };
+
+        // Attach event listeners
+        document.getElementById('fileInput').addEventListener('change', handleFileUpload);
+        document.getElementById('showChart').addEventListener('click', showChart);
+    </script>
+</body>
+</html>

@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Leaflet Map with Filters</title>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
+    <style>
+        #map {
+            height: 500px;
+        }
+        #filters {
+            margin: 10px;
+        }
+    </style>
+</head>
+<body>
+    <div id="filters">
+        <label for="cityFilter">City:</label>
+        <select id="cityFilter">
+            <option value="">All</option>
+            <option value="London">London</option>
+            <option value="Manchester">Manchester</option>
+            <option value="Liverpool">Liverpool</option>
+        </select>
+
+        <label for="nameFilter">Name:</label>
+        <input type="text" id="nameFilter" placeholder="Enter takeaway name" />
+        <button id="applyFilters">Apply Filters</button>
+    </div>
+    <div id="map"></div>
+
+    <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+    <script>
+        // Fake data
+        const takeaways = [
+            { name: 'Tasty Bites', lang: 'English', lat: 51.505, lng: -0.09, url: 'http://tastybites.co.uk', city: 'London' },
+            { name: 'Pizza Delight', lang: 'Italian', lat: 53.483, lng: -2.244, url: 'http://pizzadelight.co.uk', city: 'Manchester' },
+            { name: 'Sushi World', lang: 'Japanese', lat: 53.408, lng: -2.991, url: 'http://sushiworld.co.uk', city: 'Liverpool' },
+            { name: 'Burger King', lang: 'English', lat: 51.515, lng: -0.102, url: 'http://burgerking.co.uk', city: 'London' }
+        ];
+
+        // Initialize map
+        const map = L.map('map').setView([51.505, -0.09], 5);
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            attribution: '© OpenStreetMap contributors'
+        }).addTo(map);
+
+        let markers = [];
+
+        // Function to add markers based on the data
+        function addMarkers(filteredData) {
+            // Clear existing markers
+            markers.forEach(marker => map.removeLayer(marker));
+            markers = [];
+
+            // Add new markers
+            filteredData.forEach(item => {
+                const marker = L.marker([item.lat, item.lng]).addTo(map)
+                    .bindPopup(`<b>${item.name}</b><br>${item.city}<br><a href="${item.url}" target="_blank">Visit</a>`);
+                markers.push(marker);
+            });
+        }
+
+        // Initially add all markers
+        addMarkers(takeaways);
+
+        // Filter functionality
+        document.getElementById('applyFilters').addEventListener('click', () => {
+            const cityFilter = document.getElementById('cityFilter').value.toLowerCase();
+            const nameFilter = document.getElementById('nameFilter').value.toLowerCase();
+
+            const filteredTakeaways = takeaways.filter(item => {
+                const matchesCity = cityFilter === '' || item.city.toLowerCase() === cityFilter;
+                const matchesName = nameFilter === '' || item.name.toLowerCase().includes(nameFilter);
+                return matchesCity && matchesName;
+            });
+
+            // Add markers for filtered data
+            addMarkers(filteredTakeaways);
+        });
+    </script>
+</body>
+</html>

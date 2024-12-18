@@ -1,0 +1,668 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>Mealzo Integrated Monitoring</title>
+        <link rel="icon" type="image/png" href="{% static 'img/monitoring-system.png' %}">
+        <style>
+            .select2-container--default .select2-selection--single {
+                background-color: rgba(255, 255, 255, 0) !important; 
+                border: var(--bs-border-width) solid #6c757d !important;
+                height: max-content !important;
+            }
+            .select2-container {
+                width: 95% !important;
+            }
+
+
+            .navbar {
+                position: absolute !important;
+                top: 1%;
+                right: -50%;
+                width: auto;
+                max-width: 1200px;
+                z-index: 1000;
+
+                background: rgb(255 255 255 / 60%);
+                box-shadow: 0px 0px 20px 5px rgb(0 0 0 / 30%);
+                backdrop-filter: blur(25px) saturate(200%);
+                -webkit-backdrop-filter: blur(25px) saturate(200%);
+                box-shadow: 0px 0px 20px 0px rgba(0, 0, 0, 0.2);
+                transition: right 2s ease;
+
+                border-top-left-radius: 30px;
+                border-top-right-radius: 30px;
+                border-bottom-right-radius: 30px;
+                border-bottom-left-radius: 30px;
+            }
+            .custom-input {
+                background-color: #ffffff00 !important;
+                border: var(--bs-border-width) solid #6c757d !important;
+                border-top-right-radius: 0.375rem !important;
+                border-bottom-right-radius: 0.375rem !important;
+            }
+            .custom-dropdown-menu {
+                background: rgb(255 255 255 / 60%);
+                box-shadow: 0px 0px 20px 5px rgb(0 0 0 / 30%);
+                backdrop-filter: blur(25px) saturate(200%);
+                border-radius: 10px;
+                box-shadow: 0px 4px 20px rgba(0, 0, 0, 0.2);
+            }
+
+            .custom-dropdown-menu .text-dark-custom {
+                color: #343a40;
+            }
+
+            .half-circle-button i {
+                font-size: 20px;
+                color: #e9540d;
+                position: absolute;
+                top: 50%;
+                left: 50%;
+                transform: translate(-50%, -50%);
+            }
+            .sidebar, sidebar-container {
+                background: rgb(255 255 255 / 60%);
+                box-shadow: 0px 0px 20px 5px rgb(0 0 0 / 30%);
+                backdrop-filter: blur(25px) saturate(200%);
+                -webkit-backdrop-filter: blur(25px) saturate(200%);
+                border-top-left-radius: 0px;
+                border-top-right-radius: 30px;
+                border-bottom-right-radius: 30px;
+                border-bottom-left-radius: 30px;
+
+                position: absolute;
+                top: 1%;
+                left: -100%;
+                padding: 1%;
+                transition: left 1s ease;
+                z-index: 1000;
+                width: auto;
+                height: calc(100% - 5%);
+                overflow-x: auto;
+                scrollbar-width: none; 
+                
+                
+            }
+            .sidebar:hover {
+                scrollbar-width: thin;
+                scrollbar-color: rgba(233, 83, 13, 0.487) rgba(255, 255, 255, 0);
+            }
+
+            /* Half-Circle Button Styles */
+            .half-circle-button {
+                background: rgb(255 255 255 / 60%);
+                box-shadow: 0px 0px 20px 5px rgb(0 0 0 / 30%);
+                backdrop-filter: blur(10px) saturate(200%);
+                -webkit-backdrop-filter: blur(10px) saturate(200%);
+                position: fixed;
+                top: 50%;
+                left: -100%;
+                width: 25px;
+                height: 80px;
+                border-top-right-radius: 40px;
+                border-bottom-right-radius: 40px;
+                transform: translateY(-50%);
+                cursor: pointer;
+                transition: left 1.5s ease;
+                z-index: 1005;
+            }
+            .sidebar h2 {
+                margin-bottom: 20px;
+            }
+            .sidebar ul {
+                list-style: none;
+            }
+            .sidebar ul li {
+                margin-bottom: 10px;
+            }
+            .sidebar ul li a {
+                color: rgb(0, 0, 0);
+                text-decoration: none;
+            }
+            /* Basic Reset */
+            * {
+                margin: 0;
+                padding: 0;
+                box-sizing: border-box;
+            }
+            body {
+                font-family: Arial, sans-serif;
+                background-color: #f4f4f4;
+            }
+            .main-content {
+                position: relative;
+                height: 100vh;
+                overflow: hidden;
+                flex-grow: 1;
+                background-color: transparent;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+            }
+            .empty-background {
+                width: 100%;
+                height: 100%;
+                border: 2px dashed #bbb;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                font-size: 20px;
+            }
+            .map-container {
+                width: 100%;
+                height: 100%;
+                flex-grow: 1;
+                align-items: stretch;
+            }
+            #map {
+                width: 100%;
+                height: 100%;
+                z-index: 1;
+            }
+
+            .profile-icon {
+                width: 20px;
+            }
+
+            img {
+                margin-left: 10px;
+            }
+            .logo {
+                font-family: 'Arial', sans-serif; 
+                font-size: 36px; 
+                font-weight: bold;
+                color: #e9540d;
+                
+                display: flex;
+                align-items: center;
+            }
+
+            .logo span {
+                font-size: 20px;
+                font-weight: lighter;
+                color: #e9530da8; 
+                margin-left: 10px;
+            }
+            #infoPanel_googlebusiness {
+                background: rgb(255 255 255 / 60%);
+                box-shadow: 0px 0px 20px 5px rgb(0 0 0 / 30%);
+                backdrop-filter: blur(25px) saturate(200%);
+                box-shadow: 0px 0px 20px 0px rgba(0, 0, 0, 0.2);
+                transition: right 2s ease;
+                position: absolute;
+                padding: 1%;
+                border-radius: 5px;
+                display: none; /* Initially hidden */
+                z-index: 1000; /* Ensure it's above the map */
+                font-size: x-small;
+                top: 10%;
+                right: 1%;
+
+
+                border-top-left-radius: 30px;
+                border-top-right-radius: 0px;
+                border-bottom-right-radius: 30px;
+                border-bottom-left-radius: 30px;
+            }
+            .leaflet-fade-anim .leaflet-map-pane .leaflet-popup .leaflet-popup-content-wrapper, .leaflet-popup-tip{
+                background: rgb(255 255 255 / 60%) !important;
+                box-shadow: 0px 0px 20px 5px rgb(0 0 0 / 30%) !important;
+                backdrop-filter: blur(25px) saturate(200%) !important;
+                -webkit-backdrop-filter: blur(25px) saturate(200%) !important;
+                box-shadow: 0px 0px 20px 0px rgba(0, 0, 0, 0.2) !important;
+            }
+            .leaflet-popup-content {
+                width: 400px !important;
+            }
+        </style>
+        <style>
+            .switch input {
+                display: none;
+            }
+
+            .switch {
+                display: inline-block;
+                width: 60px;
+                height: 30px;
+                margin: 2%;
+                transform: translateY(50%);
+                position: relative;
+            }
+
+            .slider {
+                position: absolute;
+                top: 0;
+                bottom: 0;
+                left: 0;
+                right: 0;
+                border-radius: 30px;
+                background-color: rgba(255, 255, 255, 0) !important;
+                border: var(--bs-border-width) solid #6c757d !important;
+                cursor: pointer;
+                overflow: hidden;
+                transition: 0.2s;
+            }
+
+            .slider:before {
+                position: absolute;
+                content: "";
+                width: 100%;
+                height: 100%;
+                background-color: #6c757dd1;
+                border-radius: 30px;
+                transform: translateX(-30px); /*translateX(-(w-h))*/
+                transition: 0.2s;
+            }
+
+            input:checked + .slider:before {
+                transform: translateX(30px); /*translateX(w-h)*/
+                background-color: #e9540d;
+            }
+
+            input:checked + .slider {
+                box-shadow: 0px 0px 8px 0px #e9540d, 0px 0px 5px 0px #e9540d;
+                border: var(--bs-border-width) solid #e9540d !important;
+            }
+        </style>
+        <style>
+            .popup-container {
+                font-family: Arial, sans-serif;
+            }
+        
+            .popup-container h3 {
+                font-size: 1.5em;
+                font-weight: bold;
+                color: #333;
+            }
+        
+            .popup-container hr {
+                margin: 10px 0;
+            }
+        
+            .popup-container ul {
+                list-style: none;
+                padding: 0;
+            }
+        
+            .popup-container ul li {
+                display: grid;
+                grid-template-columns: 20px 40% 1fr;
+                
+                padding: 8px;
+                align-items: center;
+                transition: all 0.2s;
+                border-radius: 10px;
+            }
+        
+            .popup-container ul li i {
+                margin-right: 8px;
+            }
+        
+            .popup-container ul li span:first-child {
+                font-weight: bold;
+            }
+            .popup-container ul li:not(:where([style*="opacity: 0.5"])):hover {
+                background-color: rgba(255, 255, 255, 0.6);
+                color: rgb(0, 0, 0);
+                transform: scale(1.05);
+            }
+        </style>
+        <style>
+            /* Half-Circle Button Styles */
+            #half-circle-button-searchResults {
+                background: rgb(255 255 255 / 60%);
+                box-shadow: 0px 0px 15px 5px rgb(0 0 0 / 20%);
+                backdrop-filter: blur(10px) saturate(200%);
+                position: fixed;
+                top: 50%;
+                right: -100%;
+                width: 20px;
+                height: 60px;
+                border-top-left-radius: 40px;
+                border-bottom-left-radius: 40px;
+                transform: translateY(-50%);
+                cursor: pointer;
+                transition: right 1.5s ease;
+                z-index: 1005;
+            }
+            #half-circle-button-searchResults i {
+                font-size: 20px;
+                color: #e9540d;
+                position: absolute;
+                top: 50%;
+                left: 50%;
+                transform: translate(-50%, -50%);
+            }
+            #searchResults {
+                width: 20%;
+                z-index: 3;
+                position: absolute;
+                top: 15%;
+                height: calc(80% - 5%);
+                padding: 10px;
+                overflow-y: auto;
+                color: #333;
+                background: rgba(255, 255, 255, 0.6);
+                backdrop-filter: blur(15px) saturate(200%);
+                box-shadow: 0px 0px 5px 0px rgba(0, 0, 0, 0.2);
+                transition: all 0.2s;
+
+                border-top-left-radius: 20px;
+                border-top-right-radius: 0px;
+                border-bottom-right-radius: 20px;
+                border-bottom-left-radius: 20px;
+
+                scrollbar-width: thin;
+                scrollbar-color: rgba(233, 83, 13, 0.487) rgba(255, 255, 255, 0);
+            }
+            #searchResults ul {
+                list-style: none;
+                padding: 0;
+            }
+            #searchResults ul li {                
+                padding: 8px;
+                align-items: center;
+                transition: all 0.2s;
+
+                border-top-left-radius: 15px;
+                border-top-right-radius: 0px;
+                border-bottom-right-radius: 15px;
+                border-bottom-left-radius: 15px;
+            }
+            #searchResults ul li:hover {
+                background-color: rgba(255, 255, 255, 0.6);
+                color: rgb(0 0 0);
+                transform: scale(1.05);
+            }
+            .li_selected {
+                border-right: 5px solid #e9540d;
+                background-color: rgba(255, 255, 255, 0.7);
+                color: rgb(0 0 0);
+                transform: scale(1.05);
+            }
+            .marker-hover {
+                width: 30px !important;
+                transition: width 1s !important;
+            }
+        </style>
+        <link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster/dist/MarkerCluster.css" />
+
+        
+
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+        <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous">
+        <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.3/dist/leaflet.css" />
+        <script src="https://unpkg.com/leaflet@1.9.3/dist/leaflet.js"></script>
+        <!-- Leaflet.markercluster CSS -->
+        <link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster/dist/MarkerCluster.Default.css" />
+        <!-- Leaflet.markercluster JavaScript -->
+        <script src="https://unpkg.com/leaflet.markercluster/dist/leaflet.markercluster.js"></script>
+
+        <script src="https://code.jquery.com/jquery-3.7.1.js"></script>
+        <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
+        <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script> 
+
+
+    </head>
+    <body>
+        <!-- Main Content Area -->
+        <div class="main-content">
+            <!-- map-container -->
+            <div class="map-container">
+                <div id="map">
+                    <div id="infoPanel_googlebusiness">
+                        Total number of businesses (<span style="color: red;" id="totalCount_googlebusiness"></span>)
+                        Total number with coordinates (<span style="color: red;" id="validCount_googlebusiness"></span>)
+                    </div>
+                    <!-- Navigation Bar -->
+                    <nav class="navbar navbar-expand-lg navbar-dark ">
+                        <div class="container-fluid">
+                            <div class="collapse navbar-collapse" id="navbarNav">
+                                <ul class="navbar-nav ms-auto">
+                                    <li class="nav-item dropdown">
+                                        <a class="nav-link dropdown-toggle" href="#" id="profileDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                                            <img src="{% static 'img/user.png' %}" alt="Profile" class="profile-icon">
+                                        </a>
+                                        <ul class="dropdown-menu dropdown-menu-end custom-dropdown-menu" aria-labelledby="profileDropdown">
+                                            <div class="d-flex align-items-center justify-content-center">
+                                                <span class="text-center text-dark-custom">
+                                                    {% if request.user.full_name %}
+                                                        <span class="fw-bold">{{ request.user.full_name }}</span>
+                                                    {% else %}
+                                                        <span class="fw-bold">{{ request.user.username }}</span>
+                                                    {% endif %}
+                                                </span>
+                                                <span class="ms-2">
+                                                    {% if request.user.is_developer %}
+                                                        <span class="badge bg-danger text-white">Developer</span>
+                                                    {% elif request.user.is_marketing %}
+                                                        <span class="badge bg-warning text-dark">Marketing</span>
+                                                    {% elif request.user.is_support %}
+                                                        <span class="badge bg-info text-white">Support</span>
+                                                    {% elif request.user.is_onboarding %}
+                                                        <span class="badge bg-primary text-white">Onboarding</span>
+                                                    {% elif request.user.is_management %}
+                                                        <span class="badge bg-success text-white">Management</span>
+                                                    {% endif %}
+                                                </span>
+                                            </div>
+                                            
+                                            <li>
+                                                <hr class="dropdown-divider">
+                                            </li>
+                                        {% if request.user.is_superuser %}
+                                        	 <li><a class="dropdown-item" href="{% url 'company:profile-all' %}">Panel</a></li>
+                                        {% endif %}
+                                            <li><a class="dropdown-item" href="{% url 'accounts:logout' %}">Log Out</a></li>
+
+                                        </ul>
+                                    </li>
+                                </ul>
+                            </div>
+                        </div>
+                    </nav>
+                </div>
+
+
+                <!-- Sidebar Container -->
+                <div class="sidebar-container">
+                    <!-- Half-Circle Button -->
+                    <div class="half-circle-button">
+                        <i class="fas fa-chevron-left"></i>
+                    </div>
+                    <!-- Sidebar -->
+                    <div class="sidebar">
+                        <div class="logo">
+                            Mealzo <span>Integrated Monitoring</span>
+                        </div>
+                        <div class="filters filters--sidebar show-for-medium">
+                            <div class="input-group mb-3">
+                                <button id="searchButton" type="button" class="btn btn-outline-secondary">Search</button>
+                                <input id="searchInput" type="text" class="form-control custom-input" placeholder="type anything...">
+                            </div>
+                            <hr style="color: rgb(0 0 0 / 50%);">
+
+                            <fieldset class="fieldset fieldset--select">
+                                <legend style="text-align-last: left;">Select Region & City</legend>
+                                <div class="fieldset__input" style="text-align-last: center;">
+                                    <select id="Region" class="form-select form-select-lg mb-3" aria-label="Select Region">
+                                        <option value="" disabled selected>Region</option>
+                                    </select>
+                                    <br><br>
+                                    <select id="city" class="form-select form-select-lg mb-3" aria-label="Select City">
+                                        <option value="" disabled selected>City (0)</option>
+                                    </select>
+                                </div>
+                            </fieldset>
+                            <hr>
+
+                            <fieldset name="" class="fieldset fieldset--checkbox">
+                                <legend>Select Food Panels</legend>
+                                <div>
+                                    <label class="switch">
+                                    <input type="checkbox" id="justeat">
+                                    <span class="slider" for="justeat"></span>
+                                    </label> <img src="/static/img/justeat.png" alt="justeat" width="120px" height="25px">
+                                    <label id="counter_justeat" style="vertical-align: sub; font-size: large; transition: text-shadow 0.5s ease-out;">(0)</label>
+                                    <img style="width: 20px; opacity: 0.7;" src="https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-black.png" alt="justeat">
+                                </div>
+
+                                <div>
+                                    <label class="switch">
+                                    <input type="checkbox" id="ubereats">
+                                    <span class="slider" for="ubereats"></span>
+                                    </label> <img src="/static/img/ubereats.png" alt="ubereats" width="120px" height="35px">
+                                    <label id="counter_ubereats" style="vertical-align: sub; font-size: large; transition: text-shadow 0.5s ease-out;">(0)</label>
+                                    <img style="width: 20px; opacity: 0.7;" src="https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-green.png" alt="ubereats">
+                                </div>
+
+                                <div>
+                                    <label class="switch">
+                                    <input type="checkbox" id="foodhub">
+                                    <span class="slider" for="foodhub"></span>
+                                    </label> <img src="/static/img/foodhub.png" alt="foodhub" width="120px" height="25px">
+                                    <label id="counter_foodhub" style="vertical-align: sub; font-size: large; transition: text-shadow 0.5s ease-out;">(0)</label>
+                                    <img style="width: 20px; opacity: 0.7;" src="https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-red.png" alt="foodhub">
+                                </div>
+
+                                <div>
+                                    <label class="switch">
+                                    <input type="checkbox" id="foodhouse">
+                                    <span class="slider" for="foodhouse"></span>
+                                    </label> <img src="/static/img/foodhouse.png" alt="foodhouse" width="120px" height="30px">
+                                    <label id="counter_foodhouse" style="vertical-align: sub; font-size: large; transition: text-shadow 0.5s ease-out;">(0)</label>
+                                    <img style="width: 20px; opacity: 0.7;" src="https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-violet.png" alt="foodhouse">
+                                </div>
+                                
+                                <div>
+                                    <label class="switch">
+                                    <input type="checkbox" id="whatthefork">
+                                    <span class="slider" for="whatthefork"></span>
+                                    </label> <img src="/static/img/whatthefork.png" alt="whatthefork" width="120px" height="25px">
+                                    <label id="counter_whatthefork" style="vertical-align: sub; font-size: large; transition: text-shadow 0.5s ease-out;">(0)</label>
+                                    <img style="width: 20px; opacity: 0.7;" src="https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-yellow.png" alt="whatthefork">
+                                </div>
+                                
+                                <div>
+                                    <label class="switch">
+                                    <input type="checkbox" id="google">
+                                    <span class="slider" for="google"></span>
+                                    </label> <img src="/static/img/google.png" alt="Google" width="120px" height="25px">
+                                    <label id="counter_google" style="vertical-align: sub; font-size: large; transition: text-shadow 0.5s ease-out;">(0)</label>
+                                    <img style="width: 20px; opacity: 0.7;" src="https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-blue.png" alt="google">
+                                </div>
+
+                                <div>
+                                    <label class="switch">
+                                        <input type="checkbox" id="mealzo">
+                                        <span class="slider" for="mealzo"></span>
+                                    </label> <img src="/static/img/mealzo.png" alt="Mealzo" width="120px" height="25px">
+                                    <label id="counter_mealzo" style="vertical-align: sub; font-size: large; transition: text-shadow 0.5s ease-out;">(0)</label>
+                                    <img style="width: 20px; opacity: 0.7;" src="https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-orange.png" alt="mealzo">
+                                </div>
+
+                                <div>
+                                    <label class="switch">
+                                        <input type="checkbox" id="menulist">
+                                        <span class="slider" for="menulist"></span>
+                                    </label> <img src="/static/img/menulist.png" alt="menulist" width="120px" height="25px">
+                                    <label id="counter_menulist" style="vertical-align: sub; font-size: large; transition: text-shadow 0.5s ease-out;">(0)</label>
+                                    <img style="width: 20px; opacity: 0.7;" src="https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-grey.png" alt="menulist">
+                                </div>
+
+                                <div>
+                                    <label class="switch">
+                                        <input type="checkbox" id="scoffable">
+                                        <span class="slider" for="scoffable"></span>
+                                    </label> <img src="/static/img/scoffable.png" alt="scoffable" width="120px" height="25px">
+                                    <label id="counter_scoffable" style="vertical-align: sub; font-size: large; transition: text-shadow 0.5s ease-out;">(0)</label>
+                                    <img style="width: 20px; opacity: 0.7;" src="https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-red.png" alt="scoffable">
+                                </div>
+
+                                <div>
+                                    <label class="switch">
+                                        <input type="checkbox" id="deliveroo">
+                                        <span class="slider" for="deliveroo"></span>
+                                    </label> <img src="/static/img/deliveroo.png" alt="deliveroo" width="120px">
+                                    <label id="counter_deliveroo" style="vertical-align: sub; font-size: large; transition: text-shadow 0.5s ease-out;">(0)</label>
+                                    <img style="width: 20px; opacity: 0.7;" src="https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-blue.png" alt="deliveroo">
+                                </div>
+
+                                <div>
+                                    <label class="switch">
+                                        <input type="checkbox" id="straightfrom">
+                                        <span class="slider" for="straightfrom"></span>
+                                    </label> <img src="/static/img/straightfrom.png" alt="straightfrom" height="18px">
+                                    <label id="counter_straightfrom" style="vertical-align: sub; font-size: large; transition: text-shadow 0.5s ease-out;">(0)</label>
+                                    <img style="width: 20px; opacity: 0.7;" src="https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-violet.png" alt="straightfrom">
+                                </div>
+
+                                <div>
+                                    <label class="switch">
+                                        <input type="checkbox" id="kuick">
+                                        <span class="slider" for="kuick"></span>
+                                    </label> <img src="/static/img/kuick.png" alt="kuick" width="120px">
+                                    <label id="counter_kuick" style="vertical-align: sub; font-size: large; transition: text-shadow 0.5s ease-out; text-shadow: none; font-weight: normal;">(0)</label>
+                                    <img style="width: 20px; opacity: 0.7;" src="https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-violet.png" alt="kuick">
+                                </div>
+                            </fieldset>
+
+                            <hr>
+
+                            <button id="Reset_btn" type="button" class="btn btn-outline-danger" style="width: 100%; border-radius: 90px;">Reset</button>
+                            <br>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+
+
+
+            <!-- Half-Circle Button -->
+            <div id="half-circle-button-searchResults">
+                <i class="fas fa-chevron-left"></i>
+            </div>
+            
+            <div id="searchResults" style="right: -40%;">
+                <!-- <div id="searchResults_Heder" style="margin: -10px; text-align: center; position: sticky; top: -10px; z-index: 1000; background: rgb(255 255 255); box-shadow: 0px 20px 20px 20px rgb(255 255 255);">
+                    <strong style="font: message-box;color: #e9540d;">Search Results</strong>
+                    <br>
+                </div>               style="margin-top: 40px;"  -->
+
+                <ul id="resultsList">
+                    
+                </ul>
+            </div>
+            
+        </div>
+
+
+        <script src="static/front/popups.js"></script>
+        <script src="static/front/ONS_Codes.js"></script>
+        <script src="static/front/FetchData.js"></script>
+        <script src="static/front/addMarkers.js"></script>
+        <script src="static/front/sidebar.js"></script>
+        <script src="static/front/Search.js"></script>
+        <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz" crossorigin="anonymous"></script>
+        <script src="static/front/map.js"></script>
+        <script src="static/front/api-urls.js"></script>
+        <script src="static/front/Get-Token.js"></script>
+        <script src="static/front/google-api-direct-request.js"></script>
+        <script src="static/front/regionBoundaryZoom.js"></script>
+        <script src="static/front/Config_Companies.js"></script>
+        <script src="static/front/handleToggleChange.js"></script>
+        <script src="static/front/cacheManager.js"></script>
+        <script src="static/front/data-fetching-and-caching.js"></script>
+        <script src="static/front/clear-cash.js"></script>
+        <script src="https://cdn.jsdelivr.net/npm/fuse.js/dist/fuse.js"></script>
+
+
+
+
+        {% include 'inc/messages.html' %}
+    </body>
+</html>

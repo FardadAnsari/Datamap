@@ -1,0 +1,194 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Interactive Map with Grouping, Clustering, and Colored Markers</title>
+
+    <!-- Leaflet.js CSS -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
+    <!-- Leaflet.js JavaScript -->
+    <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+
+    <!-- Leaflet.markercluster CSS -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster/dist/MarkerCluster.Default.css" />
+    <!-- Leaflet.markercluster JavaScript -->
+    <script src="https://unpkg.com/leaflet.markercluster/dist/leaflet.markercluster.js"></script>
+
+    <style>
+        #map {
+            height: 400px;
+            width: 100%;
+        }
+
+        /* Toggle switch styles */
+        .switch {
+            position: relative;
+            display: inline-block;
+            width: 60px;
+            height: 34px;
+        }
+
+        .switch input {
+            opacity: 0;
+            width: 0;
+            height: 0;
+        }
+
+        .slider {
+            position: absolute;
+            cursor: pointer;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: #ccc;
+            transition: .4s;
+        }
+
+        .slider:before {
+            position: absolute;
+            content: "";
+            height: 26px;
+            width: 26px;
+            border-radius: 50%;
+            left: 4px;
+            bottom: 4px;
+            background-color: white;
+            transition: .4s;
+        }
+
+        input:checked + .slider {
+            background-color: #2196F3;
+        }
+
+        input:checked + .slider:before {
+            transform: translateX(26px);
+        }
+    </style>
+</head>
+<body>
+<h1>Map with Clustering, Grouping, and Colored Markers</h1>
+
+<label class="switch">
+    <input type="checkbox" id="restaurantToggle">
+    <span class="slider"></span>
+</label>
+<span>Show Restaurants</span>
+
+<label class="switch">
+    <input type="checkbox" id="shopToggle">
+    <span class="slider"></span>
+</label>
+<span>Show Shops</span>
+
+<div id="map"></div>
+
+<script>
+    // Initialize the map
+    var map = L.map('map').setView([51.505, -0.09], 13);
+
+    // Load and display the tile layer from OpenStreetMap
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        maxZoom: 19
+    }).addTo(map);
+
+    // Create MarkerClusterGroups for each category
+    var restaurantMarkers = L.markerClusterGroup();
+    var shopMarkers = L.markerClusterGroup();
+
+    // Custom Icons for Restaurants and Shops
+    var restaurantIcon = L.icon({
+        iconUrl: 'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-red.png',
+        iconSize: [25, 41],  // size of the icon
+        iconAnchor: [12, 41], // point of the icon which will correspond to marker's location
+        popupAnchor: [1, -34], // point from which the popup should open relative to the iconAnchor
+        shadowUrl: 'https://unpkg.com/leaflet@1.7.1/dist/images/marker-shadow.png',
+        shadowSize: [41, 41]  // size of the shadow
+    });
+
+    var shopIcon = L.icon({
+        iconUrl: 'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-green.png',
+        iconSize: [25, 41],
+        iconAnchor: [12, 41],
+        popupAnchor: [1, -34],
+        shadowUrl: 'https://unpkg.com/leaflet@1.7.1/dist/images/marker-shadow.png',
+        shadowSize: [41, 41]
+    });
+
+    // Function to add restaurant markers
+    function addRestaurantMarkers(locations) {
+        locations.forEach(location => {
+            const lat = parseFloat(location.Latitude);
+            const lng = parseFloat(location.Longitude);
+            const name = location.Name;
+
+            if (!isNaN(lat) && !isNaN(lng)) {
+                const marker = L.marker([lat, lng], { icon: restaurantIcon }).bindPopup(name);
+                restaurantMarkers.addLayer(marker);  // Add marker to restaurant cluster group
+            }
+        });
+        map.addLayer(restaurantMarkers);
+    }
+
+    // Function to add shop markers
+    function addShopMarkers(locations) {
+        locations.forEach(location => {
+            const lat = parseFloat(location.Latitude);
+            const lng = parseFloat(location.Longitude);
+            const name = location.Name;
+
+            if (!isNaN(lat) && !isNaN(lng)) {
+                const marker = L.marker([lat, lng], { icon: shopIcon }).bindPopup(name);
+                shopMarkers.addLayer(marker);  // Add marker to shop cluster group
+            }
+        });
+        map.addLayer(shopMarkers);
+    }
+
+    // Fetch data from the API and group them accordingly
+    function fetchAndAddMarkers() {
+        fetch('http://92.205.191.109:8000/foodhub-data-r-and-d/?fields=Name&fields=Longitude&fields=Latitude', {
+            headers: {
+                'X-API-KEY': 'a8105743-dee6-4149-9f67-190c11e32246'
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            // Split data into categories (e.g., restaurants vs shops)
+            const restaurants = data.filter(loc => loc.Category === 'Restaurant');
+            const shops = data.filter(loc => loc.Category === 'Shop');
+
+            addRestaurantMarkers(restaurants);
+            addShopMarkers(shops);
+        })
+        .catch(error => {
+            console.error('Error fetching data:', error);
+        });
+    }
+
+    // Toggle Restaurants
+    document.getElementById('restaurantToggle').addEventListener('change', function() {
+        if (this.checked) {
+            map.addLayer(restaurantMarkers);
+        } else {
+            map.removeLayer(restaurantMarkers);
+        }
+    });
+
+    // Toggle Shops
+    document.getElementById('shopToggle').addEventListener('change', function() {
+        if (this.checked) {
+            map.addLayer(shopMarkers);
+        } else {
+            map.removeLayer(shopMarkers);
+        }
+    });
+
+    // Initially fetch and load markers
+    fetchAndAddMarkers();
+
+</script>
+
+</body>
+</html>
