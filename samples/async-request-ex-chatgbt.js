@@ -9,7 +9,7 @@ async function fetchData() {
         let response = await fetch('https://jsonplaceholder.typicode.com/posts/1');
 
         // Convert the response into JSON format and wait for it to complete
-        let data = await response.json();
+        #let data = await response.json();
 
         // Update the element with the API data
         myElement.textContent = `Title: ${data.title}`;
