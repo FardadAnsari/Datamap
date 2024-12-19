@@ -12,8 +12,24 @@
                 border: var(--bs-border-width) solid #6c757d !important;
                 height: max-content !important;
             }
-            .select2-container {
-                width: 95% !important;
+            .select2-container--default .select2-selection--multiple {
+                background-color: rgba(255, 255, 255, 0) !important;
+            }
+            .select2-container--default .select2-selection--multiple .select2-selection__choice {
+                background-color: rgba(255, 255, 255, 0) !important;
+            }
+            .select2-dropdown {
+                background: rgb(255 255 255 / 60%) !important;
+                box-shadow: 0px 0px 20px 5px rgb(0 0 0 / 30%);
+                backdrop-filter: blur(25px) saturate(200%);
+                box-shadow: 0px 0px 20px 0px rgba(0, 0, 0, 0.2);
+            }
+            .select2-results__options {
+                scrollbar-width: none;
+            }
+            .select2-container--open .select2-dropdown--below {
+                border-bottom-left-radius: 10px !important;
+                border-bottom-right-radius: 10px !important;
             }
 
 
@@ -28,7 +44,6 @@
                 background: rgb(255 255 255 / 60%);
                 box-shadow: 0px 0px 20px 5px rgb(0 0 0 / 30%);
                 backdrop-filter: blur(25px) saturate(200%);
-                -webkit-backdrop-filter: blur(25px) saturate(200%);
                 box-shadow: 0px 0px 20px 0px rgba(0, 0, 0, 0.2);
                 transition: right 2s ease;
 
@@ -81,15 +96,10 @@
                 z-index: 1000;
                 width: auto;
                 height: calc(100% - 5%);
-                overflow-x: auto;
+                overflow: hidden;
                 scrollbar-width: none; 
-                
-                
             }
-            .sidebar:hover {
-                scrollbar-width: thin;
-                scrollbar-color: rgba(233, 83, 13, 0.487) rgba(255, 255, 255, 0);
-            }
+
 
             /* Half-Circle Button Styles */
             .half-circle-button {
@@ -225,10 +235,12 @@
 
             .switch {
                 display: inline-block;
-                width: 60px;
-                height: 30px;
-                margin: 2%;
-                transform: translateY(50%);
+                width: 40px;
+                height: 20px;
+                margin-left: 2%;
+                margin-bottom: 2%;
+                margin-top: 2%;
+                transform: translateY(70%);
                 position: relative;
             }
 
@@ -253,12 +265,12 @@
                 height: 100%;
                 background-color: #6c757dd1;
                 border-radius: 30px;
-                transform: translateX(-30px); /*translateX(-(w-h))*/
+                transform: translateX(-20px); /*translateX(-(w-h))*/
                 transition: 0.2s;
             }
 
             input:checked + .slider:before {
-                transform: translateX(30px); /*translateX(w-h)*/
+                transform: translateX(20px); /*translateX(w-h)*/
                 background-color: #e9540d;
             }
 
@@ -384,8 +396,23 @@
                 transform: scale(1.05);
             }
             .marker-hover {
-                width: 30px !important;
-                transition: width 1s !important;
+                width: 30px;
+            }
+            .marker-hover:hover {
+                width: 35px !important;
+            }
+
+        </style>
+
+        <style>
+            .Food_Panels {
+                max-height: 300px; /* ارتفاع محدود */
+                overflow-y: auto; /* اضافه کردن اسکرول بار در صورت نیاز */
+                scrollbar-width: none;
+            }
+            .Food_Panels:hover {
+                scrollbar-width: thin;
+                scrollbar-color: rgba(233, 83, 13, 0.487) rgba(255, 255, 255, 0);
             }
         </style>
         <link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster/dist/MarkerCluster.css" />
@@ -479,107 +506,53 @@
                             Mealzo <span>Integrated Monitoring</span>
                         </div>
                         <div class="filters filters--sidebar show-for-medium">
-                            <div class="input-group mb-3">
-                                <button id="searchButton" type="button" class="btn btn-outline-secondary">Search</button>
-                                <input id="searchInput" type="text" class="form-control custom-input" placeholder="type anything...">
-                            </div>
+                            <form id="searchForm">
+                                <div class="input-group mb-3">
+                                    <button id="searchButton" type="button" class="btn btn-outline-secondary">Search</button>
+                                    <input id="searchInput" type="text" class="form-control custom-input" placeholder="type anything...">
+                                </div>
+                            </form>
                             <hr style="color: rgb(0 0 0 / 50%);">
-
+                            <!-- Select Region & City -->
                             <fieldset class="fieldset fieldset--select">
-                                <legend style="text-align-last: left;">Select Region & City</legend>
+                                <legend style="text-align-last: left;">advanced filter</legend>
                                 <div class="fieldset__input" style="text-align-last: center;">
-                                    <select id="Region" class="form-select form-select-lg mb-3" aria-label="Select Region">
-                                        <option value="" disabled selected>Region</option>
-                                    </select>
-                                    <br><br>
-                                    <select id="city" class="form-select form-select-lg mb-3" aria-label="Select City">
-                                        <option value="" disabled selected>City (0)</option>
+                                    <select id="Region" class="form-select form-select-lg mb-3" aria-label="Select Region" multiple="multiple">
                                     </select>
                                 </div>
                             </fieldset>
                             <hr>
 
-                            <fieldset name="" class="fieldset fieldset--checkbox">
-                                <legend>Select Food Panels</legend>
+                            <!-- Food Panels -->
+                            <legend>Food Panel</legend>
+                            <fieldset name="" class="fieldset fieldset--checkbox Food_Panels">
                                 <div>
                                     <label class="switch">
                                     <input type="checkbox" id="justeat">
                                     <span class="slider" for="justeat"></span>
-                                    </label> <img src="/static/img/justeat.png" alt="justeat" width="120px" height="25px">
+                                    </label> <img src="/static/img/justeat.png" alt="justeat" width="120px">
                                     <label id="counter_justeat" style="vertical-align: sub; font-size: large; transition: text-shadow 0.5s ease-out;">(0)</label>
-                                    <img style="width: 20px; opacity: 0.7;" src="https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-black.png" alt="justeat">
+                                    <img id="justeat_icon" style="width: 30px;" src="" alt="justeat">
                                 </div>
 
-                                <div>
-                                    <label class="switch">
-                                    <input type="checkbox" id="ubereats">
-                                    <span class="slider" for="ubereats"></span>
-                                    </label> <img src="/static/img/ubereats.png" alt="ubereats" width="120px" height="35px">
-                                    <label id="counter_ubereats" style="vertical-align: sub; font-size: large; transition: text-shadow 0.5s ease-out;">(0)</label>
-                                    <img style="width: 20px; opacity: 0.7;" src="https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-green.png" alt="ubereats">
-                                </div>
 
                                 <div>
                                     <label class="switch">
                                     <input type="checkbox" id="foodhub">
                                     <span class="slider" for="foodhub"></span>
-                                    </label> <img src="/static/img/foodhub.png" alt="foodhub" width="120px" height="25px">
+                                    </label> <img src="/static/img/foodhub.png" alt="foodhub" width="120px">
                                     <label id="counter_foodhub" style="vertical-align: sub; font-size: large; transition: text-shadow 0.5s ease-out;">(0)</label>
-                                    <img style="width: 20px; opacity: 0.7;" src="https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-red.png" alt="foodhub">
+                                    <img id="foodhub_icon" style="width: 30px;" src="" alt="foodhub">
                                 </div>
+
 
                                 <div>
                                     <label class="switch">
-                                    <input type="checkbox" id="foodhouse">
-                                    <span class="slider" for="foodhouse"></span>
-                                    </label> <img src="/static/img/foodhouse.png" alt="foodhouse" width="120px" height="30px">
-                                    <label id="counter_foodhouse" style="vertical-align: sub; font-size: large; transition: text-shadow 0.5s ease-out;">(0)</label>
-                                    <img style="width: 20px; opacity: 0.7;" src="https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-violet.png" alt="foodhouse">
-                                </div>
-                                
-                                <div>
-                                    <label class="switch">
-                                    <input type="checkbox" id="whatthefork">
-                                    <span class="slider" for="whatthefork"></span>
-                                    </label> <img src="/static/img/whatthefork.png" alt="whatthefork" width="120px" height="25px">
-                                    <label id="counter_whatthefork" style="vertical-align: sub; font-size: large; transition: text-shadow 0.5s ease-out;">(0)</label>
-                                    <img style="width: 20px; opacity: 0.7;" src="https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-yellow.png" alt="whatthefork">
-                                </div>
-                                
-                                <div>
-                                    <label class="switch">
-                                    <input type="checkbox" id="google">
-                                    <span class="slider" for="google"></span>
-                                    </label> <img src="/static/img/google.png" alt="Google" width="120px" height="25px">
-                                    <label id="counter_google" style="vertical-align: sub; font-size: large; transition: text-shadow 0.5s ease-out;">(0)</label>
-                                    <img style="width: 20px; opacity: 0.7;" src="https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-blue.png" alt="google">
-                                </div>
-
-                                <div>
-                                    <label class="switch">
-                                        <input type="checkbox" id="mealzo">
-                                        <span class="slider" for="mealzo"></span>
-                                    </label> <img src="/static/img/mealzo.png" alt="Mealzo" width="120px" height="25px">
-                                    <label id="counter_mealzo" style="vertical-align: sub; font-size: large; transition: text-shadow 0.5s ease-out;">(0)</label>
-                                    <img style="width: 20px; opacity: 0.7;" src="https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-orange.png" alt="mealzo">
-                                </div>
-
-                                <div>
-                                    <label class="switch">
-                                        <input type="checkbox" id="menulist">
-                                        <span class="slider" for="menulist"></span>
-                                    </label> <img src="/static/img/menulist.png" alt="menulist" width="120px" height="25px">
-                                    <label id="counter_menulist" style="vertical-align: sub; font-size: large; transition: text-shadow 0.5s ease-out;">(0)</label>
-                                    <img style="width: 20px; opacity: 0.7;" src="https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-grey.png" alt="menulist">
-                                </div>
-
-                                <div>
-                                    <label class="switch">
-                                        <input type="checkbox" id="scoffable">
-                                        <span class="slider" for="scoffable"></span>
-                                    </label> <img src="/static/img/scoffable.png" alt="scoffable" width="120px" height="25px">
-                                    <label id="counter_scoffable" style="vertical-align: sub; font-size: large; transition: text-shadow 0.5s ease-out;">(0)</label>
-                                    <img style="width: 20px; opacity: 0.7;" src="https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-red.png" alt="scoffable">
+                                    <input type="checkbox" id="ubereats">
+                                    <span class="slider" for="ubereats"></span>
+                                    </label> <img src="/static/img/ubereats.png" alt="ubereats" width="120px">
+                                    <label id="counter_ubereats" style="vertical-align: sub; font-size: large; transition: text-shadow 0.5s ease-out;">(0)</label>
+                                    <img id="ubereats_icon" style="width: 30px;" src="" alt="ubereats">
                                 </div>
 
                                 <div>
@@ -588,16 +561,61 @@
                                         <span class="slider" for="deliveroo"></span>
                                     </label> <img src="/static/img/deliveroo.png" alt="deliveroo" width="120px">
                                     <label id="counter_deliveroo" style="vertical-align: sub; font-size: large; transition: text-shadow 0.5s ease-out;">(0)</label>
-                                    <img style="width: 20px; opacity: 0.7;" src="https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-blue.png" alt="deliveroo">
+                                    <img id="deliveroo_icon" style="width: 30px;" src="" alt="deliveroo">
                                 </div>
 
                                 <div>
                                     <label class="switch">
                                         <input type="checkbox" id="straightfrom">
                                         <span class="slider" for="straightfrom"></span>
-                                    </label> <img src="/static/img/straightfrom.png" alt="straightfrom" height="18px">
+                                    </label> <img src="/static/img/straightfrom.png" alt="straightfrom" width="120px">
                                     <label id="counter_straightfrom" style="vertical-align: sub; font-size: large; transition: text-shadow 0.5s ease-out;">(0)</label>
-                                    <img style="width: 20px; opacity: 0.7;" src="https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-violet.png" alt="straightfrom">
+                                    <img id="straightfrom_icon" style="width: 30px;" src="" alt="straightfrom">
+                                </div>
+
+                                <div>
+                                    <label class="switch">
+                                        <input type="checkbox" id="scoffable">
+                                        <span class="slider" for="scoffable"></span>
+                                    </label> <img src="/static/img/scoffable.png" alt="scoffable" width="120px">
+                                    <label id="counter_scoffable" style="vertical-align: sub; font-size: large; transition: text-shadow 0.5s ease-out;">(0)</label>
+                                    <img id="scoffable_icon" style="width: 30px;" src="" alt="scoffable">
+                                </div>
+                                
+                                <div>
+                                    <label class="switch">
+                                    <input type="checkbox" id="foodhouse">
+                                    <span class="slider" for="foodhouse"></span>
+                                    </label> <img src="/static/img/foodhouse.png" alt="foodhouse" width="120px">
+                                    <label id="counter_foodhouse" style="vertical-align: sub; font-size: large; transition: text-shadow 0.5s ease-out;">(0)</label>
+                                    <img id="foodhouse_icon" style="width: 30px;" src="" alt="foodhouse">
+                                </div>
+                                
+                                <div>
+                                    <label class="switch">
+                                    <input type="checkbox" id="whatthefork">
+                                    <span class="slider" for="whatthefork"></span>
+                                    </label> <img src="/static/img/whatthefork.png" alt="whatthefork" width="120px">
+                                    <label id="counter_whatthefork" style="vertical-align: sub; font-size: large; transition: text-shadow 0.5s ease-out;">(0)</label>
+                                    <img id="whatthefork_icon" style="width: 30px;" src="" alt="whatthefork">
+                                </div>
+                                
+                                <div>
+                                    <label class="switch">
+                                    <input type="checkbox" id="googleBusinessManager">
+                                    <span class="slider" for="googleBusinessManager"></span>
+                                    </label> <img src="/static/img/google.png" alt="googleBusinessManager" width="120px">
+                                    <label id="counter_google" style="vertical-align: sub; font-size: large; transition: text-shadow 0.5s ease-out;">(0)</label>
+                                    <img id="googleBusinessManager_icon" style="width: 30px;" src="" alt="google">
+                                </div>
+
+                                <div>
+                                    <label class="switch">
+                                        <input type="checkbox" id="mealzo">
+                                        <span class="slider" for="mealzo"></span>
+                                    </label> <img src="/static/img/mealzo.png" alt="Mealzo" width="120px">
+                                    <label id="counter_mealzo" style="vertical-align: sub; font-size: large; transition: text-shadow 0.5s ease-out;">(0)</label>
+                                    <img id="mealzo_icon" style="width: 30px;" src="" alt="mealzo">
                                 </div>
 
                                 <div>
@@ -606,12 +624,19 @@
                                         <span class="slider" for="kuick"></span>
                                     </label> <img src="/static/img/kuick.png" alt="kuick" width="120px">
                                     <label id="counter_kuick" style="vertical-align: sub; font-size: large; transition: text-shadow 0.5s ease-out; text-shadow: none; font-weight: normal;">(0)</label>
-                                    <img style="width: 20px; opacity: 0.7;" src="https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-violet.png" alt="kuick">
+                                    <img id="kuick_icon" style="width: 30px;" src="" alt="kuick">
+                                </div>
+
+                                <div>
+                                    <label class="switch">
+                                        <input type="checkbox" id="menulist">
+                                        <span class="slider" for="menulist"></span>
+                                    </label> <img src="/static/img/menulist.png" alt="menulist" width="120px">
+                                    <label id="counter_menulist" style="vertical-align: sub; font-size: large; transition: text-shadow 0.5s ease-out;">(0)</label>
+                                    <img id="menulist_icon" style="width: 30px;" src="" alt="menulist">
                                 </div>
                             </fieldset>
-
                             <hr>
-
                             <button id="Reset_btn" type="button" class="btn btn-outline-danger" style="width: 100%; border-radius: 90px;">Reset</button>
                             <br>
                         </div>
@@ -637,7 +662,6 @@
                     
                 </ul>
             </div>
-            
         </div>
 
 
@@ -650,10 +674,10 @@
         <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz" crossorigin="anonymous"></script>
         <script src="static/front/map.js"></script>
         <script src="static/front/api-urls.js"></script>
+        <script src="static/front/Config_Companies.js"></script>
         <script src="static/front/Get-Token.js"></script>
         <script src="static/front/google-api-direct-request.js"></script>
         <script src="static/front/regionBoundaryZoom.js"></script>
-        <script src="static/front/Config_Companies.js"></script>
         <script src="static/front/handleToggleChange.js"></script>
         <script src="static/front/cacheManager.js"></script>
         <script src="static/front/data-fetching-and-caching.js"></script>

@@ -22,7 +22,7 @@ function addMarkers(locations, company) {
             marker.on('mouseover', function (e) {
                 const markerElement = e.target._icon;
                 markerElement?.classList.add('marker-hover');
-                this.openPopup();
+                // this.openPopup();
             });
             marker.on('popupclose', function (e) {
                 const markerElement = e.target._icon;

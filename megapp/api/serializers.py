@@ -12,7 +12,7 @@ from company.models import (Foodhub,
 )
 
 from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
-# api serializer foothub
+# api serializer foothub yrtjdtyjdtyjdtyjtdyjdytjedytjetdj
 
 
 class FoothubSerializers(serializers.ModelSerializer):

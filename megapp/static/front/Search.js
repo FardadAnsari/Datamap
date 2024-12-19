@@ -3,7 +3,15 @@ document.getElementById('searchButton').addEventListener('click', () => {
     Object.keys(companies).forEach(companyId => Search(companyId));
 });
 
-
+document.getElementById("searchForm").addEventListener("submit", function (event) {
+    event.preventDefault(); // جلوگیری از رفتار پیش‌فرض فرم
+    const searchButton = document.getElementById('searchButton');
+    if (searchButton) {
+        searchButton.click();
+    } else {
+        console.warn("Search button not found");
+    }
+});
 
 
 function Search(companyId) {
@@ -35,8 +43,8 @@ function Search(companyId) {
         filteredData = results.map(result => result.item);
     }
 
-    // فیلتر کردن براساس منطقه انتخاب‌شده
-    if (window.Region_Boundary_Selected && typeof window.Region_Boundary_Selected.contains === 'function') {
+    // فیلتر کردن براساس مناطق انتخاب‌شده
+    if (window.Region_Boundary_Selected && Array.isArray(window.Region_Boundary_Selected) && window.Region_Boundary_Selected.length > 0) {
         filteredData = filteredData.filter(location => {
             // بررسی وجود مقادیر و معتبر بودن لت و لانگ
             if (!location.latitude || !location.longitude) {
@@ -51,11 +59,14 @@ function Search(companyId) {
                 return false;
             }
 
-            // چک کردن اینکه لت و لانگ داخل محدوده منطقه انتخاب‌شده هست یا خیر
+            // چک کردن اینکه لت و لانگ داخل محدوده یکی از مناطق انتخاب‌شده هست یا خیر
             const latLng = L.latLng(latitude, longitude);
-            return window.Region_Boundary_Selected.contains(latLng);
+            
+            // بررسی اینکه آیا این نقطه در هر یک از محدوده‌های مناطق انتخاب‌شده قرار دارد
+            return window.Region_Boundary_Selected.some(regionBounds => regionBounds.contains(latLng));
         });
     }
+
 
 
 
@@ -66,21 +77,17 @@ function Search(companyId) {
         const validLocations = filteredData.filter(location => {
             const latitude = parseFloat(location.latitude);
             const longitude = parseFloat(location.longitude);
-
             return !isNaN(latitude) && !isNaN(longitude);
         });
-
         if (validLocations.length > 0) {
             const bounds = L.latLngBounds(validLocations.map(location => [location.latitude, location.longitude]));
             map.flyToBounds(bounds, { duration: 1.5 });
         }
-
-    } else {
-        if (filteredData.length === 0 && window.Region_Boundary_Selected && typeof window.Region_Boundary_Selected.contains === 'function') {
-            map.flyToBounds(window.Region_Boundary_Selected, { duration: 2, easeLinearity: 0.5 });
-        }
     }
-
+    
+    if (window.Region_Boundary_Selected && typeof window.Region_Boundary_Selected.contains === 'function') {
+        map.flyToBounds(window.Region_Boundary_Selected, { duration: 2, easeLinearity: 0.5 });
+    }
 }
 
 
@@ -103,17 +110,21 @@ document.getElementById('Reset_btn').addEventListener('click', function () {
     document.getElementById('searchInput').value = '';
     document.getElementById('Region').selectedIndex = 0;
     $('#Region').val(null).trigger('change');
-    $('#city').val(null).trigger('change');
-    const citySelect = document.getElementById('city');
-    citySelect.innerHTML = '<option value="" disabled selected>City (0)</option>';
 
 
 
-    // Remove region boundary layer
-    if (window.RegionBoundaryLayer) {
-        map.removeLayer(window.RegionBoundaryLayer);
+
+    // Remove all region boundary layers
+    if (window.RegionBoundaryLayer && Array.isArray(window.RegionBoundaryLayer)) {
+        window.RegionBoundaryLayer.forEach(layer => {
+            map.removeLayer(layer); // حذف هر لایه از نقشه
+        });
     }
+    // ریست کردن آرایه لایه‌ها
+    window.RegionBoundaryLayer = [];
+    // ریست کردن مرزهای منطقه انتخاب‌شده
     window.Region_Boundary_Selected = [];
+
 
 
 
@@ -129,8 +140,8 @@ document.getElementById('Reset_btn').addEventListener('click', function () {
             counterElement.innerHTML = '(0)';
         }
     });
-    document.getElementById('google').checked = false;
-    document.getElementById('google').dispatchEvent(new Event('change'));
+    document.getElementById('googleBusinessManager').checked = false;
+    document.getElementById('googleBusinessManager').dispatchEvent(new Event('change'));
     document.getElementById('counter_google').innerHTML = `(0)`;
 
 

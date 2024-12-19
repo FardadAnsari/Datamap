@@ -930,6 +930,114 @@ function getResultItemContent_kuick(location) {
 
 
 
+
+function GetPopup_GBM(location) {
+    const popupContent = `
+            <div class="popup-container">
+                <h3>${location.title} <lable style="color: #3f82f9; margin-left: 3px; font-size: x-small;">GBM</lable></h3>
+                <hr>
+                <ul>
+                    <li>
+                        <i class="fa fa-fingerprint"></i>
+                        <span style="font-weight: bold;">ID:</span>
+                        <span>${location.name.replace("locations/", "")}</span>
+                    </li>
+                    <li>
+                        <i class="fas fa-map-marker-alt"></i>
+                        <span style="font-weight: bold;">Address:</span>
+                        <span>${location.storefrontAddress.addressLines.join(', ')}, ${location.storefrontAddress.locality}</span>
+                    </li>
+                    <li style="opacity: ${location.postalCode};">
+                        <i class="fas fa-envelope"></i>
+                        <span style="font-weight: bold;">Postcode:</span>
+                        <span>${location.storefrontAddress.postalCode || 'None'}</span>
+                    </li>
+                    <li>
+                        <i class="fas fa-phone"></i>
+                        <span style="font-weight: bold;">Phone:</span>
+                        <span>${location.phoneNumbers.primaryPhone}</span>
+                    </li>
+                    <li style="opacity: 0.5;">
+                        <i class="fas fa-star"></i>
+                        <span style="font-weight: bold;">Rating:</span>
+                        <span>None</span>
+                    </li>
+                    <li style="opacity: 0.5;">
+                        <i class="fas fa-utensils"></i>
+                        <span style="font-weight: bold;">Cuisines:</span>
+                        <span>None</span>
+                    </li>
+
+                    <hr style="color: rgb(0 0 0 / 50%);">
+
+                    <li>
+                        <i class="fas fa-globe"></i>
+                        <span style="font-weight: bold;">Website:</span>
+                        <span><a href="${location.websiteUri}" target="_blank">${location.websiteUri}</a></span>
+                    </li>
+                    <li>
+                        <i class="fas fa-map"></i>
+                        <span style="font-weight: bold;">Maps Link:</span>
+                        <span><a href="${location.metadata.mapsUri}" target="_blank">Google Maps</a></span>
+                    </li>
+                    <li>
+                        <i class="fas fa-check-circle"></i>
+                        <span style="font-weight: bold; color: ${location.metadata.hasGoogleUpdated ? 'green' : 'red'};">
+                            Google Updated:
+                        </span>
+                        <span style="color: ${location.metadata.hasGoogleUpdated ? 'green' : 'red'};">
+                            ${location.metadata.hasGoogleUpdated ? 'Yes' : 'No'}
+                        </span>
+                    </li>
+                    <li>
+                        <i class="fas fa-trash"></i>
+                        <span style="font-weight: bold; color: ${location.metadata.canDelete ? 'green' : 'red'};">
+                            Can Delete:
+                        </span>
+                        <span style="color: ${location.metadata.canDelete ? 'green' : 'red'};">
+                            ${location.metadata.canDelete ? 'Yes' : 'No'}
+                        </span>
+                    </li>
+                    <li>
+                        <i class="fas fa-utensils"></i>
+                        <span style="font-weight: bold; color: ${location.metadata.canHaveFoodMenus ? 'green' : 'red'};">
+                            Can Have Food Menus:
+                        </span>
+                        <span style="color: ${location.metadata.canHaveFoodMenus ? 'green' : 'red'};">
+                            ${location.metadata.canHaveFoodMenus ? 'Yes' : 'No'}
+                        </span>
+                    </li>
+                    <li>
+                        <i class="fas fa-comment-dots"></i>
+                        <span style="font-weight: bold; color: ${location.metadata.hasVoiceOfMerchant ? 'green' : 'red'};">
+                            Has Voice of Merchant:
+                        </span>
+                        <span style="color: ${location.metadata.hasVoiceOfMerchant ? 'green' : 'red'};">
+                            ${location.metadata.hasVoiceOfMerchant ? 'Yes' : 'No'}
+                        </span>
+                    </li>
+                </ul>
+            </div>
+        `;
+    return popupContent;
+}
+function getResultItemContent_GBM(location) {
+    return  `
+        <strong>${location.title}</strong> <lable style="color: #3f82f9; margin-left: 3px; font-size: x-small;">GBM</lable>
+        <br>
+        <span style="font-weight: 100;">${location.storefrontAddress.postalCode || 'None'}</span>
+    `;
+}
+
+
+
+
+
+
+
+
+
+
 function cleanCuisines(cuisines) {
     const unwantedTags = ["50% off", "Deals", "Convenience", '*NEW*', 'Cheeky Tuesd', '40% off or more', 'Local Legends', 'Freebie', 'Low Delivery Fee', 'Low Deliver', 'Cheek', 'Low Deliv', 'Freeb', 'Household', 'Cheeky', 'Cheeky Tues', 'Freebies', 'Dea', 'Collect stamps', 'Freebi', 'Flowers', 'Smoke House', 'Shops',  'Deli', 'Gifts', 'Low', 'Business Lunch', '*Nottingham Loves*', 'All Night Alcohol', 'Subways', 'Low Delivery Fe', 'Ch', '50% off', 'Free', 'Cheeky Tuesda'];
     const itemsArray = cuisines.split(',').map(item => item.trim());

@@ -8,100 +8,14 @@ function addMarkers_GB(locations) {
     locations.forEach(location => {
         const lat = location.latlng?.latitude;
         const lng = location.latlng?.longitude;
-        const popupContent = `
-            <div class="popup-container">
-                <h3>${location.title} <lable style="color: #3f82f9; margin-left: 3px; font-size: x-small;">GBM</lable></h3>
-                <hr>
-                <ul>
-                    <li>
-                        <i class="fa fa-fingerprint"></i>
-                        <span style="font-weight: bold;">ID:</span>
-                        <span>${location.name.replace("locations/", "")}</span>
-                    </li>
-                    <li>
-                        <i class="fas fa-map-marker-alt"></i>
-                        <span style="font-weight: bold;">Address:</span>
-                        <span>${location.storefrontAddress.addressLines.join(', ')}, ${location.storefrontAddress.locality}</span>
-                    </li>
-                    <li style="opacity: ${location.postalCode};">
-                        <i class="fas fa-envelope"></i>
-                        <span style="font-weight: bold;">Postcode:</span>
-                        <span>${location.storefrontAddress.postalCode || 'None'}</span>
-                    </li>
-                    <li>
-                        <i class="fas fa-phone"></i>
-                        <span style="font-weight: bold;">Phone:</span>
-                        <span>${location.phoneNumbers.primaryPhone}</span>
-                    </li>
-                    <li style="opacity: 0.5;">
-                        <i class="fas fa-star"></i>
-                        <span style="font-weight: bold;">Rating:</span>
-                        <span>None</span>
-                    </li>
-                    <li style="opacity: 0.5;">
-                        <i class="fas fa-utensils"></i>
-                        <span style="font-weight: bold;">Cuisines:</span>
-                        <span>None</span>
-                    </li>
-
-                    <hr style="color: rgb(0 0 0 / 50%);">
-
-                    <li>
-                        <i class="fas fa-globe"></i>
-                        <span style="font-weight: bold;">Website:</span>
-                        <span><a href="${location.websiteUri}" target="_blank">${location.websiteUri}</a></span>
-                    </li>
-                    <li>
-                        <i class="fas fa-map"></i>
-                        <span style="font-weight: bold;">Maps Link:</span>
-                        <span><a href="${location.metadata.mapsUri}" target="_blank">Google Maps</a></span>
-                    </li>
-                    <li>
-                        <i class="fas fa-check-circle"></i>
-                        <span style="font-weight: bold; color: ${location.metadata.hasGoogleUpdated ? 'green' : 'red'};">
-                            Google Updated:
-                        </span>
-                        <span style="color: ${location.metadata.hasGoogleUpdated ? 'green' : 'red'};">
-                            ${location.metadata.hasGoogleUpdated ? 'Yes' : 'No'}
-                        </span>
-                    </li>
-                    <li>
-                        <i class="fas fa-trash"></i>
-                        <span style="font-weight: bold; color: ${location.metadata.canDelete ? 'green' : 'red'};">
-                            Can Delete:
-                        </span>
-                        <span style="color: ${location.metadata.canDelete ? 'green' : 'red'};">
-                            ${location.metadata.canDelete ? 'Yes' : 'No'}
-                        </span>
-                    </li>
-                    <li>
-                        <i class="fas fa-utensils"></i>
-                        <span style="font-weight: bold; color: ${location.metadata.canHaveFoodMenus ? 'green' : 'red'};">
-                            Can Have Food Menus:
-                        </span>
-                        <span style="color: ${location.metadata.canHaveFoodMenus ? 'green' : 'red'};">
-                            ${location.metadata.canHaveFoodMenus ? 'Yes' : 'No'}
-                        </span>
-                    </li>
-                    <li>
-                        <i class="fas fa-comment-dots"></i>
-                        <span style="font-weight: bold; color: ${location.metadata.hasVoiceOfMerchant ? 'green' : 'red'};">
-                            Has Voice of Merchant:
-                        </span>
-                        <span style="color: ${location.metadata.hasVoiceOfMerchant ? 'green' : 'red'};">
-                            ${location.metadata.hasVoiceOfMerchant ? 'Yes' : 'No'}
-                        </span>
-                    </li>
-                </ul>
-            </div>
-        `;
+        const popupContent = GetPopup_GBM(location);
 
         if (lat && lng) {
-            const marker = L.marker([lat, lng], {icon: googlebusiness_icon}).bindPopup(popupContent);
+            const marker = L.marker([lat, lng], {icon: companies.googleBusinessManager.icon}).bindPopup(popupContent);
             marker.on('mouseover', function (e) {
                 const markerElement = e.target._icon;
                 markerElement?.classList.add('marker-hover');
-                this.openPopup();
+                // this.openPopup();
             });
             marker.on('popupclose', function (e) {
                 const markerElement = e.target._icon;
@@ -110,7 +24,7 @@ function addMarkers_GB(locations) {
                 }
             });
 
-            googlebusiness.addLayer(marker);
+            companies.googleBusinessManager.layer.addLayer(marker);
             counter_GBM++;
 
 
@@ -118,11 +32,7 @@ function addMarkers_GB(locations) {
             if (counter_GBM < 100) {
                 const listItem = document.createElement('li');
                 listItem.classList.add('GBM_li');
-                listItem.innerHTML = `
-                    <strong>${location.title}</strong> <lable style="color: #3f82f9; margin-left: 3px; font-size: x-small;">GBM</lable>
-                    <br>
-                    <span style="font-weight: 100;">${location.storefrontAddress.postalCode || 'None'}</span>
-                `;
+                listItem.innerHTML = getResultItemContent_GBM(location);
                 listItem.addEventListener('click', function() {
                     document.querySelectorAll('.GBM_li').forEach(item => item.classList.remove('li_selected'));
                     listItem.classList.add('li_selected');
@@ -139,7 +49,7 @@ function addMarkers_GB(locations) {
             }
         }
     });
-    map.addLayer(googlebusiness);
+    map.addLayer(companies.googleBusinessManager.layer);
     document.getElementById('validCount_googlebusiness').textContent = counter_GBM
     if (counter_GBM > 0) { 
         document.getElementById('counter_google').innerHTML = `(${counter_GBM})`;
@@ -191,7 +101,7 @@ function fetchDataGBM() {
 
 
 
-document.getElementById('google').addEventListener('change', function () {
+document.getElementById('googleBusinessManager').addEventListener('change', function () {
     const isChecked = this.checked;
     if (isChecked) {
         fetchDataGBM()
@@ -205,8 +115,8 @@ document.getElementById('google').addEventListener('change', function () {
             });
     } else {
         // Remove the Google Business map layer
-        map.removeLayer(googlebusiness);  
-        googlebusiness.clearLayers(); 
+        map.removeLayer(companies.googleBusinessManager.layer);  
+        companies.googleBusinessManager.layer.clearLayers(); 
         document.querySelectorAll('.GBM_li').forEach(element => {
             element.remove();
         });
@@ -222,12 +132,12 @@ document.getElementById('google').addEventListener('change', function () {
 
 
 document.getElementById('searchButton').addEventListener('click', function() {
-    map.removeLayer(googlebusiness);
-    googlebusiness.clearLayers();
+    map.removeLayer(companies.googleBusinessManager.layer);
+    companies.googleBusinessManager.layer.clearLayers();
     document.querySelectorAll('.GBM_li').forEach(element => {
         element.remove();
     });
-    if (document.getElementById('google').checked) {
+    if (document.getElementById('googleBusinessManager').checked) {
         // Flatten the array of lists into a single list
         const flattenedData = window.stored_data_GBM.flat();
         let filteredData;

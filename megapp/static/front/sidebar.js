@@ -12,7 +12,6 @@ function showSidebar() {
         sidebar.style.left = '3%';
         halfCircleButton.innerHTML = '<i class="fas fa-chevron-left"></i>';
     }
-
 }
 
 // Event listener for hovering over the button
