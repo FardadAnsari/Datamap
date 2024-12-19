@@ -26,7 +26,7 @@ class Foodhub(models.Model):
     merchant_id = models.CharField(max_length=32, blank=True, null=True)
     delivery_time = models.CharField(max_length=32, blank=True, null=True)
     collection_time = models.CharField(max_length=32, blank=True, null=True)
-    facebook = models.CharField(max_length=256, blank=True, null=True)
+    facebook_url = models.CharField(max_length=256, blank=True, null=True)
     twitter = models.CharField(max_length=256, blank=True, null=True)
     android_link  = models.CharField(max_length=256, blank=True, null=True)
     title = models.CharField(max_length=256, blank=True, null=True)
@@ -39,6 +39,7 @@ class Foodhub(models.Model):
 
     def __str__(self):
         return self.shop_name
+
 
 
 class Justeat(models.Model):
@@ -77,7 +78,7 @@ class WhatTheFork(models.Model):
     rating = models.CharField(max_length=16, blank=True, null=True)
     total_reviews = models.CharField(max_length=16, blank=True, null=True)
     cuisines = models.CharField(max_length=100, blank=True, null=True)
-    url_map = models.CharField(max_length=64, blank=True, null=True)
+    map_url = models.CharField(max_length=64, blank=True, null=True)
     map_preview_url = models.CharField(max_length=64, blank=True, null=True)
     about_text = models.CharField(max_length=255, blank=True, null=True)
     email = models.CharField(max_length=32, blank=True, null=True)
@@ -86,7 +87,7 @@ class WhatTheFork(models.Model):
     instagram_url = models.CharField(max_length=64, blank=True, null=True)
     facebook_url = models.CharField(max_length=64, blank=True, null=True)
     twitter_url = models.CharField(max_length=64, blank=True, null=True)
-    google_play_link = models.CharField(max_length=64, blank=True, null=True)
+    android_link = models.CharField(max_length=64, blank=True, null=True)
     app_store_link = models.CharField(max_length=64, blank=True, null=True)
     description = models.CharField(max_length=255, blank=True, null=True)
     main_text = models.CharField(max_length=255, blank=True, null=True)
@@ -94,6 +95,7 @@ class WhatTheFork(models.Model):
     currency = models.CharField(max_length=50, blank=True, null=True)
     class Meta:
         db_table = 'whatthefork'
+
 
 
 
@@ -133,7 +135,9 @@ class Foodhouse(models.Model):
     phone = models.CharField(max_length=64, blank=True, null=True)
     website = models.CharField(max_length=128, blank=True, null=True)
     social_media = models.CharField(max_length=256, blank=True, null=True)
-    apps = models.CharField(max_length=256, blank=True, null=True)
+    android_link = models.CharField(max_length=255, blank=True, null=True)
+    app_store_link = models.CharField(max_length=255, blank=True, null=True)
+
     map_url = models.CharField(max_length=256, blank=True, null=True)
 
 
