@@ -1,5 +1,6 @@
 from rest_framework import serializers
-from company.models import (Foodhub,
+from company.models import (
+    Foodhub,
     Justeat,
     WhatTheFork,
     UberEats,
@@ -12,7 +13,7 @@ from company.models import (Foodhub,
 )
 
 from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
-# api serializer foothub yrtjdtyjdtyjdtyjtdyjdytjedytjetdj
+# api serializer foothub
 
 
 class FoothubSerializers(serializers.ModelSerializer):

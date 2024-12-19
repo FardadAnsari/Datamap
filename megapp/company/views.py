@@ -7,14 +7,14 @@ from .forms import ( FoodhouseCraeteForm,
                      UberEatsCraeteForm,
                      JusteatCraeteForm,
                      WhatTheForkCraeteForm,
-
+                     ScoffableList,
                      )
 
 from .models import Foodhouse, Foodhub, UberEats, Justeat, WhatTheFork,ScoffableSerializers
 from django.urls import reverse_lazy
 from .mixin import SuperUserAccessMixin
-# from accounts.models import User
-# from accounts.forms import ProfileForm
+from accounts.models import User
+from accounts.forms import ProfileForm
 
 
 

@@ -35,7 +35,7 @@ function Search(companyId) {
     } else {
         const options = {
             keys: company.searchKeys || [], // استفاده از کلیدهای خاص کمپانی
-            threshold: 0.1,
+            threshold: window.thresholdValue,
             useExtendedSearch: true
         };
         const fuse = new Fuse(storedData, options);
