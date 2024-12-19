@@ -1,6 +1,6 @@
 window.addEventListener("unload", () => {
     // Clear Local Storage
-    //localStorage.clear();
+    // localStorage.clear();
 
     // Clear Session Storage
     sessionStorage.clear();
@@ -12,18 +12,42 @@ window.addEventListener("unload", () => {
     });
 
     // Clear Service Worker Cache
-    if ('caches' in window) {
+    if ("caches" in window) {
         caches.keys().then((cacheNames) => {
-            cacheNames.forEach((cacheName) => caches.delete(cacheName));
+            return Promise.all(cacheNames.map((cacheName) => caches.delete(cacheName)));
         });
     }
 
     // Unregister Service Workers
-    if ('serviceWorker' in navigator) {
+    if ("serviceWorker" in navigator) {
         navigator.serviceWorker.getRegistrations().then((registrations) => {
-            registrations.forEach((registration) => registration.unregister());
+            return Promise.all(registrations.map((registration) => registration.unregister()));
         });
     }
 
-    console.log("All cache and stored data cleared on tab close!");
+    // Clear IndexedDB
+    if ("indexedDB" in window) {
+        const dbsToDelete = indexedDB.databases ? indexedDB.databases() : Promise.resolve([]);
+        dbsToDelete.then((dbs) => {
+            dbs.forEach((db) => {
+                indexedDB.deleteDatabase(db.name);
+            });
+        });
+    }
+
+    // Clear WebSQL Databases (Deprecated but still present in some browsers)
+    // const dbsToClear = ["myDatabase1", "myDatabase2"]; // Replace with your database names if known
+    // dbsToClear.forEach((dbName) => {
+    //     try {
+    //         const db = openDatabase(dbName, "1.0", "description", 1);
+    //         db.transaction((tx) => {
+    //             tx.executeSql("DROP TABLE IF EXISTS tableName"); // Replace `tableName` with actual table names
+    //         });
+    //     } catch (error) {
+    //         console.error(`Error clearing WebSQL for ${dbName}:`, error);
+    //     }
+    // });
+
+    // Log completion
+    console.log("All cache, stored data, and website data cleared on tab close!");
 });
