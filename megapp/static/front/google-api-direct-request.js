@@ -53,14 +53,12 @@ function addMarkers_GB(locations) {
     document.getElementById('validCount_googlebusiness').textContent = counter_GBM
     if (counter_GBM > 0) { 
         document.getElementById('counter_google').innerHTML = `(${counter_GBM})`;
-
         document.getElementById('counter_google').style.textShadow = "0px 0px 15px rgba(255, 0, 0, 1)";
         document.getElementById('counter_google').style.fontWeight = "bold";
         setTimeout(() => {
             document.getElementById('counter_google').style.textShadow = "none";
             document.getElementById('counter_google').style.fontWeight = "normal";
         }, 500);
-        
     } else {
         document.getElementById('counter_google').innerHTML = `(${counter_GBM})`;
     }
@@ -129,8 +127,6 @@ document.getElementById('googleBusinessManager').addEventListener('change', func
 
 
 
-
-
 document.getElementById('searchButton').addEventListener('click', function() {
     map.removeLayer(companies.googleBusinessManager.layer);
     companies.googleBusinessManager.layer.clearLayers();
@@ -140,7 +136,6 @@ document.getElementById('searchButton').addEventListener('click', function() {
     if (document.getElementById('googleBusinessManager').checked) {
         // Flatten the array of lists into a single list
         const flattenedData = window.stored_data_GBM.flat();
-        let filteredData;
         const searchValue = document.getElementById('searchInput').value.trim().replace(/\s+/g, ' ');
         if (!searchValue) {
             filteredData = flattenedData;
@@ -154,22 +149,36 @@ document.getElementById('searchButton').addEventListener('click', function() {
             let results = fuse.search(searchValue);
             filteredData = results.map(result => result.item);
         }
-        
-        if (window.Region_Boundary_Selected && typeof window.Region_Boundary_Selected.contains === 'function') {
+
+        // فیلتر کردن براساس مناطق انتخاب‌شده
+        if (window.Region_Boundary_Selected && Array.isArray(window.Region_Boundary_Selected) && window.Region_Boundary_Selected.length > 0) {
             filteredData = filteredData.filter(location => {
-                const latitude = parseFloat(location.latitude);
-                const longitude = parseFloat(location.longitude);
-                
-                if (!isNaN(latitude) && !isNaN(longitude)) {
-                    const latLng = L.latLng(latitude, longitude);
-                    return window.Region_Boundary_Selected.contains(latLng);
+                const lat = location.latlng?.latitude;
+                const lng = location.latlng?.longitude;
+        
+                // بررسی وجود مقادیر و معتبر بودن لت و لانگ
+                if (!lat || !lng) {
+                    return false;
                 }
-                return false;
-            });
+        
+                const latitude = parseFloat(lat);
+                const longitude = parseFloat(lng);
+        
+                // بررسی معتبر بودن مقادیر لت و لانگ
+                if (isNaN(latitude) || isNaN(longitude)) {
+                    return false;
+                }
+        
+                // چک کردن اینکه لت و لانگ داخل محدوده یکی از مناطق انتخاب‌شده هست یا خیر
+                const latLng = L.latLng(latitude, longitude);
+                const isWithinBounds = window.Region_Boundary_Selected.some(regionBounds => {
+                    return regionBounds.contains(latLng);
+                });
+                return isWithinBounds;
+            })
         }
+        
         counter_GBM = 0;
         addMarkers_GB(filteredData);
-        
     }
 });
-

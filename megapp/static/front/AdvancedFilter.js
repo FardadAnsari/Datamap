@@ -1,23 +1,44 @@
-const sliderEl = document.getElementById("Sensitivity_range");
-const sliderValue = document.querySelector(".value");
-window.thresholdValue = 0.1
-// تابع برای نگاشت مقدار اسلایدر به threshold
-function mapRangeToThreshold(value) {
-    // اینجا چون محدوده min و max در HTML از 0.1 تا 1 است، نیازی به نگاشت اضافی نیست.
-    return parseFloat(value);
-}
+document.addEventListener("DOMContentLoaded", () => {
+    function updateSliderBackground(slider, value, max) {
+        const progress = (value / max) * 100;
+        slider.style.background = `linear-gradient(to right, #007bff ${progress}%, #ccc ${progress}%)`;
+    }
 
-// تنظیم مقدار threshold هنگام تغییر رینج
-sliderEl.addEventListener("input", (event) => {
-    const tempSliderValue = event.target.value;
-    sliderValue.textContent = tempSliderValue;
+    function initializeSlider(slider, label, checkbox) {
+        const initialValue = slider.value;
+        label.textContent = initialValue;
+        updateSliderBackground(slider, initialValue, slider.max);
 
-    // محاسبه مقدار threshold
-    window.thresholdValue = mapRangeToThreshold(tempSliderValue);
+        slider.disabled = !checkbox.checked;
+        if (!checkbox.checked) {
+            slider.style.background = "#ccc";
+        }
 
-    // بهبود بصری استایل پس‌زمینه اسلایدر
-    const progress = ((thresholdValue - 0.1) / 0.9) * 100;
-    sliderEl.style.background = `linear-gradient(to right, #f50 ${progress}%, #ccc ${progress}%)`;
+        checkbox.addEventListener("change", () => {
+            slider.disabled = !checkbox.checked;
+            if (checkbox.checked) {
+                updateSliderBackground(slider, slider.value, slider.max);
+            } else {
+                slider.style.background = "#ccc";
+            }
+        });
 
-    console.log("Threshold Value:", thresholdValue);
+        slider.addEventListener("input", (event) => {
+            const value = event.target.value;
+            label.textContent = value;
+            updateSliderBackground(slider, value, slider.max);
+        });
+    }
+
+    // Rating slider setup
+    const ratingSlider = document.getElementById("Rating_range");
+    const ratingLabel = document.querySelector(".value_Rating_range");
+    const ratingCheckbox = document.getElementById("Rating_checkbox");
+    initializeSlider(ratingSlider, ratingLabel, ratingCheckbox);
+
+    // Review slider setup
+    const reviewSlider = document.getElementById("Review_range");
+    const reviewLabel = document.querySelector(".value_Review_range");
+    const reviewCheckbox = document.getElementById("Review_checkbox");
+    initializeSlider(reviewSlider, reviewLabel, reviewCheckbox);
 });

@@ -14,34 +14,96 @@ document.getElementById("searchForm").addEventListener("submit", function (event
 });
 
 
-function Search(companyId) {
+
+
+
+
+
+
+async function getSelectedFilters() {
+    const selectedFilters = [];
+    // انتخاب چک باکس‌های فعال
+    const checkboxes = document.querySelectorAll('.form-check-input:checked');
+    // اضافه کردن مقادیر به آرایه
+    checkboxes.forEach(checkbox => {
+        selectedFilters.push(checkbox.value);
+    });
+    return selectedFilters;
+}
+
+
+
+
+
+
+async function Search(companyId) {
+    // بررسی فعال بودن تاگل کمپانی
     const company = companies[companyId];
     if (!company) {
         console.error(`Company configuration not found for id: ${companyId}`);
         return;
     }
-
     const isChecked = document.getElementById(companyId).checked;
     if (!isChecked) return;
 
+
+
+
+    ////////////////////////// فیلترینگ //////////////////////////
     let filteredData;
     const searchValue = document.getElementById('searchInput').value.trim().replace(/\s+/g, ' ');
+    const DATA = company.data;
+    const selectedFilters = await getSelectedFilters();
 
-    // استفاده از داده‌های داخل کانفیک
-    const storedData = company.data;
+    // اگر selectedFilters خالی باشد یا فقط شامل 'rating' و 'review' باشد، از کلیدهای پیش‌فرض کمپانی استفاده کنید
+    const searchKeys = selectedFilters.length > 0 && !selectedFilters.every(filter => filter === 'rating' || filter === 'review')
+        ? selectedFilters
+        : company.searchKeys || [];
 
-    if (!searchValue) {
-        filteredData = storedData;
-    } else {
+
+    // اعمال فیلتر برای Rating و Review
+    const ratingValue = document.getElementById('Rating_range').value;
+    const reviewValue = document.getElementById('Review_range').value;
+
+    // فیلتر داده‌ها بر اساس Rating و Review
+    let filteredByRatingAndReview = DATA.filter(item => {
+        let isValid = true;
+
+        // بررسی فیلتر Rating
+        if (selectedFilters.includes('rating')) {
+            const itemRating = parseFloat(item.rating) || 0;
+            isValid = isValid && itemRating >= parseFloat(ratingValue);
+        }
+
+        // بررسی فیلتر Review
+        if (selectedFilters.includes('review')) {
+            const itemReview = parseInt(item.total_reviews) || 0;
+            isValid = isValid && itemReview >= parseInt(reviewValue);
+        }
+
+
+        return isValid;
+    });
+
+    // حالا داده‌ها را بر اساس فیلترهای سرچ و کلیدهای کمپانی فیلتر می‌کنیم
+    if (searchValue) {
         const options = {
-            keys: company.searchKeys || [], // استفاده از کلیدهای خاص کمپانی
-            threshold: window.thresholdValue,
+            keys: searchKeys,
+            threshold: 0.1,
             useExtendedSearch: true
         };
-        const fuse = new Fuse(storedData, options);
+        const fuse = new Fuse(filteredByRatingAndReview, options);
         const results = fuse.search(searchValue);
         filteredData = results.map(result => result.item);
+    } else {
+        filteredData = filteredByRatingAndReview;
     }
+
+
+
+
+
+
 
     // فیلتر کردن براساس مناطق انتخاب‌شده
     if (window.Region_Boundary_Selected && Array.isArray(window.Region_Boundary_Selected) && window.Region_Boundary_Selected.length > 0) {
@@ -50,18 +112,14 @@ function Search(companyId) {
             if (!location.latitude || !location.longitude) {
                 return false;
             }
-
             const latitude = parseFloat(location.latitude);
             const longitude = parseFloat(location.longitude);
-
             // بررسی معتبر بودن مقادیر لت و لانگ
             if (isNaN(latitude) || isNaN(longitude)) {
                 return false;
             }
-
             // چک کردن اینکه لت و لانگ داخل محدوده یکی از مناطق انتخاب‌شده هست یا خیر
             const latLng = L.latLng(latitude, longitude);
-            
             // بررسی اینکه آیا این نقطه در هر یک از محدوده‌های مناطق انتخاب‌شده قرار دارد
             return window.Region_Boundary_Selected.some(regionBounds => regionBounds.contains(latLng));
         });
@@ -154,12 +212,49 @@ document.getElementById('Reset_btn').addEventListener('click', function () {
 
 
 
+
+
+
+    
+
+
+    // ریست چک‌باکس‌ها
+    document.querySelectorAll(".form-check-input").forEach((checkbox) => {
+        checkbox.checked = false;
+    });
+    // ریست مقدار اسلایدرها
+    const ratingRange = document.getElementById("Rating_range");
+    const reviewRange = document.getElementById("Review_range");
+    ratingRange.value = 0;
+    reviewRange.value = 0;
+    // به‌روزرسانی مقدار نمایشی اسلایدرها
+    document.querySelector(".value_Rating_range").textContent = "0";
+    document.querySelector(".value_Review_range").textContent = "0";
+    // غیرفعال کردن اسلایدرها
+    ratingRange.disabled = true;
+    ratingRange.style.background = "#ccc";
+    reviewRange.disabled = true;
+    reviewRange.style.background = "#ccc";
+
+
+
+
+
+
+
+
+
     // Reset map view
     map.flyTo([53.719009658267055, -3.0252257374101705], 7, {
         animate: true,
         duration: 1
     });
 });
+
+
+
+
+
 
 
 
@@ -173,4 +268,25 @@ document.getElementById('searchButton').addEventListener('click', function() {
             document.getElementById('half-circle-button-searchResults').innerHTML = '<i class="fas fa-chevron-right"></i>';
         }, 3000);
     }
+});
+
+
+
+
+
+
+// نمایش اسپینر
+document.getElementById('searchButton').addEventListener('click', function () {
+    const button = this;
+    const spinner = document.getElementById('spinner');
+    
+    // نمایش اسپینر
+    spinner.classList.remove('d-none');
+    button.disabled = true; // غیرفعال کردن دکمه
+
+    // توقف اسپینر بعد از 5 ثانیه
+    setTimeout(() => {
+        spinner.classList.add('d-none');
+        button.disabled = false; // فعال کردن دوباره دکمه
+    }, 5000);
 });

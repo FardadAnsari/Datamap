@@ -378,7 +378,7 @@
 
         <style>
             .Food_Panels {
-                max-height: 300px; /* ارتفاع محدود */
+                max-height: 350px; /* ارتفاع محدود */
                 overflow-y: auto; /* اضافه کردن اسکرول بار در صورت نیاز */
                 scrollbar-width: none;
             }
@@ -415,7 +415,7 @@
                 border-bottom-right-radius: 10px !important;
             }
             .select2-container {
-                width: 200px !important;
+                width: 300px !important;
             }
         </style>
         <style>
@@ -438,96 +438,67 @@
             .accordion-body {
                 padding: 0px !important;
             }
+            .select2-container--default .select2-selection--multiple .select2-selection__choice__remove {
+                display: none;
+            }
         </style>
         <style>
-            .range-slider {
-                flex: 1;
-            }
-            .sliderticks {
-                display: flex;
-                justify-content: space-between;
-                padding: 0 10px;
-            }
-            .sliderticks span {
-                display: flex;
-                justify-content: center;
-                width: 1px;
-                height: 10px;
-                background: #d3d3d3;
-                line-height: 40px;
-            }
+            /* General styling for the range slider */
             input[type="range"] {
-                /* removing default appearance */
-                -webkit-appearance: none;
-                appearance: none; 
-                /* creating a custom design */
-                width: 100%;
-                cursor: pointer;
-                outline: none;
-                border-radius: 15px;
-                /*  overflow: hidden;  remove this line*/
-                
-                /* New additions */
-                height: 6px;
-                background: #ccc;
+                -webkit-appearance: none; /* Reset for WebKit browsers */
+                appearance: none; /* Modern browsers */
+                width: 100%; /* Full width */
+                height: 8px; /* Slider track height */
+                background: #ccc; /* Default background color */
+                border-radius: 4px; /* Rounded edges */
+                outline: none; /* Remove outline */
+                transition: background 0.3s ease; /* Smooth transition for background */
             }
-            /* Thumb: webkit */
+
+            /* Style for the slider thumb */
             input[type="range"]::-webkit-slider-thumb {
-                /* removing default appearance */
                 -webkit-appearance: none;
-                appearance: none; 
-                /* creating a custom design */
-                height: 15px;
-                width: 15px;
-                background-color: #f50;
-                border-radius: 50%;
-                border: none;
-
-                /* box-shadow: -407px 0 0 400px #f50; emove this line */
-                transition: .2s ease-in-out;
+                appearance: none;
+                width: 16px;
+                height: 16px;
+                background: #f50;
+                border-radius: 50%; /* Circular thumb */
+                cursor: pointer;
             }
 
-            /* Thumb: Firefox */
             input[type="range"]::-moz-range-thumb {
-                height: 15px;
-                width: 15px;
-                background-color: #f50;
-                border-radius: 50%;
+                width: 16px;
+                height: 16px;
+                background: #f50;
                 border: none;
-                transition: .2s ease-in-out;
+                border-radius: 50%; /* Circular thumb */
+                cursor: pointer;
             }
 
-            /* Hover, active & focus Thumb: Webkit */
-            input[type="range"]::-webkit-slider-thumb:hover {
-                box-shadow: 0 0 0 10px rgba(255,85,0, .1)
-            }
-            input[type="range"]:active::-webkit-slider-thumb {
-                box-shadow: 0 0 0 13px rgba(255,85,0, .2)
-            }
-            input[type="range"]:focus::-webkit-slider-thumb {
-                box-shadow: 0 0 0 13px rgba(255,85,0, .2)
+            input[type="range"]:focus {
+                outline: none; /* Remove focus outline */
             }
 
-            /* Hover, active & focus Thumb: Firfox */
-
-            input[type="range"]::-moz-range-thumb:hover {
-                box-shadow: 0 0 0 10px rgba(255,85,0, .1)
-            }
-                input[type="range"]:active::-moz-range-thumb {
-                box-shadow: 0 0 0 13px rgba(255,85,0, .2)
-            }
-                input[type="range"]:focus::-moz-range-thumb {
-                box-shadow: 0 0 0 13px rgba(255,85,0, .2)    
+            /* Disabled slider styling */
+            input[type="range"]:disabled {
+                background: #eee; /* Gray background for disabled state */
+                cursor: not-allowed;
             }
 
-            .range {
-                height: 8rem;
+            input[type="range"]:disabled::-webkit-slider-thumb {
+                background: #ccc; /* Disabled thumb color */
             }
 
-            .value {
-                font-size: 26px;    
-                width: 50px;
-                text-align: center;
+            input[type="range"]:disabled::-moz-range-thumb {
+                background: #ccc; /* Disabled thumb color */
+            }
+
+        </style>
+
+        <style>
+            .list-group-item {
+                background-color: #ffffff00 !important;
+                border: none !important;
             }
         </style>
 
@@ -624,7 +595,10 @@
                         <div class="filters filters--sidebar show-for-medium">
                             <form id="searchForm">
                                 <div class="input-group mb-3">
-                                    <button id="searchButton" type="button" class="btn btn-outline-secondary">Search</button>
+                                    <button id="searchButton" type="button" class="btn btn-outline-secondary">
+                                        <span id="spinner" class="spinner-border spinner-border-sm me-2 d-none" role="status" aria-hidden="true"></span>
+                                        Search
+                                    </button>
                                     <input id="searchInput" type="text" class="form-control custom-input" placeholder="type anything...">
                                 </div>
                             </form>
@@ -637,49 +611,102 @@
                             <div class="accordion">
                                 <div class="accordion-item">
                                     <h2 class="accordion-header">
-                                        <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapsefilter" aria-expanded="true" aria-controls="collapsefilter">
+                                        <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapsefilter" aria-expanded="false" aria-controls="collapsefilter" style="font-weight: bold;">
                                             <i class="fa-solid fa-filter me-2"></i> Advanced Filter
                                         </button>
                                     </h2>
                                     <div id="collapsefilter" class="accordion-collapse collapse" aria-labelledby="headingfilter">
                                         <div class="accordion-body">
                                             <fieldset class="fieldset fieldset--select">
-                                                <div class="fieldset__input" style="text-align-last: center;">
-
-
-                                                    <div class="range">
-                                                        <div class="range-slider">
-                                                            <label for="range">Sensitivity: </label>
-                                                            <label class="value">0.1</label><br />
-                                                            <input
-                                                                type="range"
-                                                                min="0.1"
-                                                                max="1"
-                                                                value="0.1"
-                                                                id="Sensitivity_range"
-                                                                step="0.1"
-                                                            />
-                                                            <div class="sliderticks">
-                                                                <span>0.1</span>
-                                                                <span>0.2</span>
-                                                                <span>0.3</span>
-                                                                <span>0.4</span>
-                                                                <span>0.5</span>
-                                                                <span>0.6</span>
-                                                                <span>0.7</span>
-                                                                <span>0.8</span>
-                                                                <span>0.9</span>
-                                                                <span>1.0</span>
-                                                            </div>
-                                                        </div>
-                                                    </div>
-                                                                                              
-                                                    
-
+                                                <div class="fieldset__input text-center">
 
                                                     <!-- Region Filter -->
-                                                    <select id="Region" class="form-select form-select-lg mb-3" aria-label="Select Region" multiple="multiple">
-                                                    </select>
+                                                    <div style="margin: 5% 0;">
+                                                        <select id="Region" class="form-select form-select-lg mb-3" aria-label="Select Region" multiple>
+                                                            <!-- Options can be dynamically populated -->
+                                                        </select>
+                                                    </div>
+
+                                                    <!-- SearchBy Filter -->
+                                                    <div class="list-group" style="align-items: flex-start;">
+                                                        <label class="list-group-item fw-bold">Search by:</label>
+                                                        <label class="list-group-item">
+                                                            <input class="form-check-input me-1" type="checkbox" value="shop_name">
+                                                            Shop Name
+                                                        </label>
+                                                        <label class="list-group-item">
+                                                            <input class="form-check-input me-1" type="checkbox" value="address">
+                                                            Address
+                                                        </label>
+                                                        <label class="list-group-item">
+                                                            <input class="form-check-input me-1" type="checkbox" value="postcode">
+                                                            PostCode
+                                                        </label>
+                                                        <label class="list-group-item">
+                                                            <input class="form-check-input me-1" type="checkbox" value="phone">
+                                                            Phone
+                                                        </label>
+                                                        <label class="list-group-item">
+                                                            <input class="form-check-input me-1" type="checkbox" value="cuisines">
+                                                            Cuisines
+                                                        </label>
+
+                                                        <!-- Rating Filter -->
+                                                        <div class="list-group-item">
+                                                            <div class="range d-flex align-items-center">
+                                                                <div class="form-check me-3">
+                                                                    <input class="form-check-input" type="checkbox" id="Rating_checkbox" value="rating">
+                                                                    <label for="Rating_checkbox" class="form-check-label">Rating:</label>
+                                                                </div>
+                                                                +<label class="value_Rating_range me-3">0</label>
+                                                                <div class="slider-container d-flex flex-column align-items-center me-3">
+                                                                    <input
+                                                                        type="range"
+                                                                        min="0"
+                                                                        max="5"
+                                                                        value="0"
+                                                                        id="Rating_range"
+                                                                        step="1"
+                                                                        class="form-range"
+                                                                        aria-disabled="true"
+                                                                    />
+                                                                    <div class="sliderticks d-flex justify-content-between w-100">
+                                                                        <span>0</span>
+                                                                        <span>1</span>
+                                                                        <span>2</span>
+                                                                        <span>3</span>
+                                                                        <span>4</span>
+                                                                        <span>5</span>
+                                                                    </div>
+                                                                </div>
+                                                            </div>
+                                                        </div>
+
+                                                        <!-- Review Range Filter -->
+                                                        <div class="list-group-item">
+                                                            <div class="range d-flex align-items-center">
+                                                                <div class="form-check me-3">
+                                                                    <input class="form-check-input" type="checkbox" id="Review_checkbox" value="review">
+                                                                    <label for="Review_checkbox" class="form-check-label">Review:</label>
+                                                                </div>
+                                                                +<label class="value_Review_range me-3">0</label>
+                                                                <div class="slider-container d-flex flex-column align-items-center me-3">
+                                                                    <input
+                                                                        type="range"
+                                                                        min="0"
+                                                                        max="1000"
+                                                                        value="0"
+                                                                        id="Review_range"
+                                                                        step="1"
+                                                                        class="form-range"
+                                                                        aria-disabled="true"
+                                                                    />
+                                                                </div>
+                                                            </div>
+                                                        </div>
+
+                                                    </div>
+
                                                 </div>
                                             </fieldset>
                                         </div>
@@ -696,11 +723,11 @@
                             <div class="accordion">
                                 <div class="accordion-item">
                                     <h2 class="accordion-header" id="headingFood">
-                                        <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseFood" aria-expanded="true" aria-controls="collapseFood">
+                                        <button class="accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#collapseFood" aria-expanded="true" aria-controls="collapseFood" style="font-weight: bold;">
                                             <i class="fa-solid fa-utensils me-2"></i> Food Panel
                                         </button>
                                     </h2>
-                                    <div id="collapseFood" class="accordion-collapse collapse" aria-labelledby="headingFood">
+                                    <div id="collapseFood" class="accordion-collapse collapse show" aria-labelledby="headingFood">
                                         <div class="accordion-body">
                                             <fieldset name="" class="fieldset fieldset--checkbox Food_Panels">
                                                 <div>
@@ -870,8 +897,6 @@
         <script src="https://cdn.jsdelivr.net/npm/fuse.js/dist/fuse.js"></script>
         <script src="static/front/clear-cash.js"></script>
         <script src="static/front/AdvancedFilter.js"></script>
-
-
         {% include 'inc/messages.html' %}
     </body>
 </html>
