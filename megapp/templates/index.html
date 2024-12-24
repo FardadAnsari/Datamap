@@ -502,6 +502,37 @@
             }
         </style>
 
+        <style>
+            /* افکت نفس کشیدن */
+            .breathing-effect {
+                animation: breathing 1s infinite;
+            }
+
+            @keyframes breathing {
+                0%, 100% {
+                    box-shadow: 0 0 8px rgba(233, 84, 13, 0.2), 0 0 5px rgba(233, 84, 13, 0.5);
+                }
+                50% {
+                    box-shadow: 0 0 15px rgba(233, 84, 13, 0.5), 0 0 10px rgba(233, 84, 13, 1);
+                }
+            }
+
+            /* تغییر رنگ دایره داخل تاگل */
+            .color-transition:before {
+                background-color: #6c757d !important; /* رنگ طوسی */
+                animation: colorChange 10s linear forwards;
+            }
+
+            @keyframes colorChange {
+                0% {
+                    background-color: #6c757d; /* رنگ طوسی */
+                }
+                100% {
+                    background-color: #e9540d; /* رنگ نارنجی */
+                }
+            }
+
+        </style>
 
 
 

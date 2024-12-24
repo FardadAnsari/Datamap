@@ -67,3 +67,39 @@ function showSidebar_searchResults() {
 // Event listener for hovering over the button
 document.getElementById('half-circle-button-searchResults').addEventListener('click', showSidebar_searchResults);
 
+
+
+
+
+
+
+
+
+
+
+
+document.querySelectorAll('.switch input[type="checkbox"]').forEach(toggle => {
+    toggle.addEventListener('click', function () {
+        if (this.disabled) return; // اگر دکمه غیرفعال است، کاری نکنید
+
+        // غیرفعال کردن دکمه
+        this.disabled = true;
+
+        // دسترسی به اسلایدر مرتبط
+        const slider = this.nextElementSibling;
+        const sliderBefore = slider.querySelector(':before');
+
+        // افزودن کلاس افکت نفس کشیدن به تاگل
+        slider.classList.add('breathing-effect');
+
+        // افزودن کلاس تغییر رنگ به دایره (برای ده ثانیه)
+        slider.classList.add('color-transition');
+
+        // بازنشانی بعد از 10 ثانیه
+        setTimeout(() => {
+            this.disabled = false; // فعال کردن دوباره دکمه
+            slider.classList.remove('breathing-effect'); // حذف افکت نفس کشیدن
+            slider.classList.remove('color-transition'); // حذف افکت رنگ
+        }, 10000);
+    });
+});

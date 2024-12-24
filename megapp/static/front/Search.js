@@ -279,14 +279,20 @@ document.getElementById('searchButton').addEventListener('click', function() {
 document.getElementById('searchButton').addEventListener('click', function () {
     const button = this;
     const spinner = document.getElementById('spinner');
+    const regionSelect = document.getElementById('Region'); // دسترسی به ریجن سلکت
+
     
     // نمایش اسپینر
     spinner.classList.remove('d-none');
     button.disabled = true; // غیرفعال کردن دکمه
+    regionSelect.disabled = true; // غیرفعال کردن ریجن سلکت
+
+
 
     // توقف اسپینر بعد از 5 ثانیه
     setTimeout(() => {
         spinner.classList.add('d-none');
         button.disabled = false; // فعال کردن دوباره دکمه
+        regionSelect.disabled = false; // فعال کردن ریجن سلکت
     }, 5000);
 });
